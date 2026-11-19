@@ -66,4 +66,10 @@ Manifest schema v3 adds an optional `code` section. Include a WebAssembly backen
 }
 ```
 
-Use unique surface IDs. Supported placements are `settings`, `workspace`, and `completed_video`. The host validates the declaration, checks that the ZIP contains the entrypoints, and retains the package. Execution is pending. The runtime contract will use isolated WebAssembly components and sandboxed frontend documents, with plugin access to app operations mediated by explicit host grants.
+Use unique surface IDs. Supported placements are `settings`, `workspace`, and `completed_video`. The host validates the declaration, checks that the ZIP contains the entrypoints, and retains the package. Installed backend components can be invoked explicitly through Arrumo. Sandboxed frontend execution and host capability grants remain pending.
+
+### Invoke a backend
+
+Implement the [WIT backend world](wit/plugin.wit). The `invoke` export receives UTF-8 JSON text and returns UTF-8 JSON text. The host instantiates a fresh component with no host imports or WASI. A component therefore receives only the input the caller supplies. The host limits component size to 4 MiB, input and output to 64 KiB each, and applies memory and fuel limits.
+
+The [echo example](examples/component) includes the manifest and a handwritten component in WebAssembly text format. Compile it with `wasm-tools parse examples/component/echo.wat -o examples/component/echo.wasm`, then package the example directory with `--include echo.wasm`. After installation, pass JSON on stdin to the editor CLI's `invoke-plugin component-echo` command.

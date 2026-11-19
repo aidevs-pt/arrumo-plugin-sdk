@@ -1,0 +1,5 @@
+package arrumo:plugin@0.1.0;
+
+world plugin {
+    export invoke: func(input: string) -> string;
+}

@@ -1,0 +1,16 @@
+(component
+  (core module $implementation
+    (memory (export "memory") 2)
+    (func (export "allocate") (param i32 i32 i32 i32) (result i32)
+      i32.const 64)
+    (func (export "echo") (param $pointer i32) (param $length i32) (result i32)
+      (i32.store (i32.const 0) (local.get $pointer))
+      (i32.store (i32.const 4) (local.get $length))
+      i32.const 0))
+  (core instance $guest (instantiate $implementation))
+  (alias core export $guest "memory" (core memory $memory))
+  (alias core export $guest "allocate" (core func $allocate))
+  (func (export "invoke") (param "input" string) (result string)
+    (canon lift (core func $guest "echo")
+      (memory $memory)
+      (realloc $allocate))))

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 3,
+  "id": "component-echo",
+  "name": "Component Echo",
+  "description": "Returns the JSON passed to its isolated backend.",
+  "capabilities": {
+    "echo": {
+      "name": "Echo",
+      "description": "Return the input JSON unchanged."
+    }
+  },
+  "code": {
+    "backend": {
+      "component": "echo.wasm"
+    }
+  }
+}

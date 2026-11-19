@@ -15,7 +15,8 @@
       "enum": [
         1,
         2,
-        3
+        3,
+        4
       ]
     },
     "id": {
@@ -170,6 +171,14 @@
               "type": "string",
               "maxLength": 240,
               "pattern": "^(?:(?!\\.(1, 2)/)[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]*\\.wasm$"
+            },
+            "permissions": {
+              "type": "array",
+              "maxItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "const": "workspace-context-read"
+              }
             }
           }
         },
@@ -251,7 +260,8 @@
           "schemaVersion": {
             "enum": [
               2,
-              3
+              3,
+              4
             ]
           }
         }
@@ -266,7 +276,43 @@
       "then": {
         "properties": {
           "schemaVersion": {
-            "const": 3
+            "enum": [
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "required": [
+              "backend"
+            ],
+            "properties": {
+              "backend": {
+                "required": [
+                  "permissions"
+                ],
+                "properties": {
+                  "permissions": {
+                    "minItems": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "const": 4
           }
         }
       }

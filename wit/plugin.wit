@@ -3,3 +3,8 @@ package arrumo:plugin@0.1.0;
 world plugin {
     export invoke: func(input: string) -> string;
 }
+
+world workspace-plugin {
+    import read-workspace-context: func() -> string;
+    export invoke: func(input: string) -> string;
+}

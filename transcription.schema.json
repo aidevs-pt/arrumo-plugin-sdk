@@ -10,7 +10,7 @@
   "properties": {
     "schemaVersion": {"const": 1},
     "pluginId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
-    "protocol": {"const": "timed-words-multipart"},
+    "protocol": {"enum": ["timed-words-multipart", "text-multipart"]},
     "endpoint": {"type": "string", "pattern": "^https://[^\\s?#]+$"},
     "credentialSetting": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
     "credentialHeader": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},

@@ -47,3 +47,5 @@ An app-scoped field is configured at app scope only. A workspace-scoped field ca
 The [transcription descriptor](transcription.schema.json) is a versioned host contract for reviewed, bundled providers. The descriptor identifies a plugin with the `transcription` capability and names a secret field declared in that plugin's manifest. It also declares the HTTPS endpoint, credential header, and model. The host reads the configured credential from its system store and builds the request itself.
 
 The `timed-words-multipart` transport posts a WAV as `file` with `model_id` and word timestamp granularity. It accepts a response with `language_code`, `text`, and timed word tokens, and returns normalized word records. The host limits request and response sizes and disables redirects. Installing an arbitrary package does not activate a credential-bearing transport.
+
+The `text-multipart` protocol posts a WAV as `file` with `model`. It uses a bearer credential and expects JSON `text` and optional `languages` records. It does not provide word timings. The host reports unknown or multiple detected languages as `und` or `mul` and leaves the word list empty.

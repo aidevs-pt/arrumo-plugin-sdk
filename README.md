@@ -66,7 +66,7 @@ Manifest schema v3 adds an optional `code` section. Include a WebAssembly backen
 }
 ```
 
-Use unique surface IDs. Supported placements are `settings`, `workspace`, and `completed_video`. The host validates the declaration, checks that the ZIP contains the entrypoints, and retains the package. Installed backend components can be invoked explicitly through Arrumo. Sandboxed frontend execution and host capability grants remain pending.
+Use unique surface IDs. Supported placements are `settings`, `workspace`, and `completed_video`. The host validates the declaration, checks that the ZIP contains the entrypoints, and retains the package. Installed backend components can be invoked explicitly through Arrumo. Installed frontend surfaces render in sandboxed frames. Host capability grants are declared and enforced separately.
 
 ### Invoke a backend
 
@@ -79,3 +79,9 @@ The [echo example](examples/component) includes the manifest and a handwritten c
 With manifest schema v4, a backend can declare `"permissions": ["workspace-context-read"]` in `code.backend` and implement the `workspace-plugin` WIT world. Installation alone grants no permission. An operator can grant this permission to a specific installed package in a specific workspace.
 
 Invoke the plugin with that workspace ID. The host links `read-workspace-context` only when the grant matches the current package. The function returns the workspace's context as a JSON string or `null`, and can be called once per invocation. The grant is evaluated at invocation start. Updating or removing the package revokes the grant for subsequent calls.
+
+### Render a frontend panel
+
+Each frontend entrypoint must be a self-contained UTF-8 HTML document of at most 512 KiB. Inline its JavaScript and styles and use data URLs for embedded images or fonts. The desktop app loads the document from a dedicated local protocol in an opaque sandboxed frame. The panel receives no native command bridge or workspace data. The content policy restricts resource loads to the document and its inline assets.
+
+Package the [frontend counter example](examples/frontend) with `--include index.html`. After installing the ZIP, open the panel under **Plugin panels** in desktop Settings.

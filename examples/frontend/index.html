@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Counter</title>
+  <style>
+    body { font: 1rem system-ui; margin: 1rem; }
+    output { display: block; margin-block-end: .75rem; }
+    button { font: inherit; }
+  </style>
+</head>
+<body>
+  <output aria-live="polite" id="count">Count 0</output>
+  <button id="increment" type="button">Increment</button>
+  <script>
+    let count = 0;
+    document.querySelector("#increment").addEventListener("click", () => {
+      document.querySelector("#count").textContent = "Count " + ++count;
+    });
+  </script>
+</body>
+</html>

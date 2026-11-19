@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 3,
+  "id": "frontend-counter",
+  "name": "Frontend Counter",
+  "description": "An isolated example panel with local state.",
+  "capabilities": {
+    "counter": {
+      "name": "Counter",
+      "description": "Increment a counter inside the panel."
+    }
+  },
+  "code": {
+    "frontend": [
+      {
+        "id": "counter",
+        "title": "Counter",
+        "document": "index.html",
+        "placement": "settings"
+      }
+    ]
+  }
+}

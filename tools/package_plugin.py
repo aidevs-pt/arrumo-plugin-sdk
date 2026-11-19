@@ -65,6 +65,16 @@ def build_package(root, extra_files):
     if len(setting_ids) != len(set(setting_ids)):
         raise ValueError("Duplicate plugin setting ID")
 
+    code = manifest.get("code", {})
+    surfaces = code.get("frontend", [])
+    if len({surface["id"] for surface in surfaces}) != len(surfaces):
+        raise ValueError("Duplicate plugin surface ID")
+    entrypoints = {surface["document"] for surface in surfaces}
+    if "backend" in code:
+        entrypoints.add(code["backend"]["component"])
+    if not entrypoints.issubset(names):
+        raise ValueError("Include every declared code entrypoint in the package")
+
     buffer = io.BytesIO()
     remaining = MAX_PACKAGE - len(manifest_bytes)
     with zipfile.ZipFile(buffer, "w") as archive:
@@ -74,6 +84,8 @@ def build_package(root, extra_files):
             else:
                 data = read_file(root, name, remaining)
                 remaining -= len(data)
+            if name in entrypoints and not data:
+                raise ValueError(f"Empty plugin code entrypoint: {name}")
             entry = zipfile.ZipInfo(name)
             entry.create_system = 3
             entry.external_attr = (stat.S_IFREG | 0o644) << 16

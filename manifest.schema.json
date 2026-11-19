@@ -14,7 +14,8 @@
     "schemaVersion": {
       "enum": [
         1,
-        2
+        2,
+        3
       ]
     },
     "id": {
@@ -101,6 +102,9 @@
       "items": {
         "$ref": "#/$defs/setting"
       }
+    },
+    "code": {
+      "$ref": "#/$defs/code"
     }
   },
   "$defs": {
@@ -149,6 +153,79 @@
           "type": "boolean"
         }
       }
+    },
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "backend": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "component"
+          ],
+          "properties": {
+            "component": {
+              "type": "string",
+              "maxLength": 240,
+              "pattern": "^(?:(?!\\.(1, 2)/)[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]*\\.wasm$"
+            }
+          }
+        },
+        "frontend": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "document",
+              "placement"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/identifier"
+              },
+              "title": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "document": {
+                "type": "string",
+                "maxLength": 240,
+                "pattern": "^(?:(?!\\.(1, 2)/)[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]*\\.html$"
+              },
+              "placement": {
+                "enum": [
+                  "settings",
+                  "workspace",
+                  "completed_video"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "backend"
+          ]
+        },
+        {
+          "required": [
+            "frontend"
+          ],
+          "properties": {
+            "frontend": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
     }
   },
   "dependentSchemas": {
@@ -172,7 +249,24 @@
       "then": {
         "properties": {
           "schemaVersion": {
-            "const": 2
+            "enum": [
+              2,
+              3
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "code"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "const": 3
           }
         }
       }

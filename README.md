@@ -46,6 +46,24 @@ An app-scoped field is configured at app scope only. A workspace-scoped field ca
 
 The [transcription descriptor](transcription.schema.json) is a versioned host contract for reviewed, bundled providers. The descriptor identifies a plugin with the `transcription` capability and names a secret field declared in that plugin's manifest. It also declares the HTTPS endpoint, credential header, and model. The host reads the configured credential from its system store and builds the request itself.
 
-The `timed-words-multipart` transport posts a WAV as `file` with `model_id` and word timestamp granularity. It accepts a response with `language_code`, `text`, and timed word tokens, and returns normalized word records. The host limits request and response sizes and disables redirects. Installing an arbitrary package does not activate a credential-bearing transport.
+The descriptor declares the multipart file field, static form fields, credential prefix, input limit, and JSON response field pointers. Optional word mappings select timestamped tokens and optional speaker labels. The host applies these declarations using a generic HTTPS transport with redirects disabled. Only descriptors in the reviewed application bundle can use this transport.
 
-The `text-multipart` protocol posts a WAV as `file` with `model`. It uses a bearer credential and expects JSON `text` and optional `languages` records. It does not provide word timings. The host reports unknown or multiple detected languages as `und` or `mul` and leaves the word list empty.
+## Code packages
+
+Manifest schema v3 adds an optional `code` section. Include a WebAssembly backend component under `backend.component`, custom HTML entry documents under `frontend`, or both. Every entrypoint must be a non-empty file in the ZIP. Include any bundled JavaScript, styles, and assets explicitly when packaging.
+
+```json
+{
+  "backend": { "component": "backend/plugin.wasm" },
+  "frontend": [
+    {
+      "id": "example-panel",
+      "title": "Example panel",
+      "document": "frontend/index.html",
+      "placement": "workspace"
+    }
+  ]
+}
+```
+
+Use unique surface IDs. Supported placements are `settings`, `workspace`, and `completed_video`. The host validates the declaration, checks that the ZIP contains the entrypoints, and retains the package. Execution is pending. The runtime contract will use isolated WebAssembly components and sandboxed frontend documents, with plugin access to app operations mediated by explicit host grants.

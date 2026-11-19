@@ -4,16 +4,125 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schemaVersion", "pluginId", "protocol", "endpoint", "credentialSetting",
-    "credentialHeader", "model"
+    "schemaVersion",
+    "pluginId",
+    "endpoint",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "maxAudioBytes",
+    "fileField",
+    "form",
+    "response"
   ],
   "properties": {
-    "schemaVersion": {"const": 1},
-    "pluginId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
-    "protocol": {"enum": ["timed-words-multipart", "text-multipart"]},
-    "endpoint": {"type": "string", "pattern": "^https://[^\\s?#]+$"},
-    "credentialSetting": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
-    "credentialHeader": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
-    "model": {"type": "string", "pattern": "\\S"}
+    "schemaVersion": {
+      "const": 2
+    },
+    "pluginId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "endpoint": {
+      "type": "string",
+      "pattern": "^https://[^\\s?#]+$"
+    },
+    "credentialSetting": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "credentialHeader": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "credentialPrefix": {
+      "type": "string"
+    },
+    "maxAudioBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 33554432
+    },
+    "fileField": {
+      "type": "string",
+      "minLength": 1
+    },
+    "form": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "language"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "languageItem": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "words": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "text",
+            "start",
+            "end"
+          ],
+          "properties": {
+            "items": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "text": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "start": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "end": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "speaker": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field",
+                "equals"
+              ],
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "pattern": "^/"
+                },
+                "equals": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -50,6 +50,31 @@ class PackagePluginTest(unittest.TestCase):
         manifest.write_bytes(b'{"id":"first","id":"second"}')
         with self.assertRaisesRegex(ValueError, "Duplicate manifest field"):
             build_package(self.source, [])
-        manifest.write_bytes(self.manifest.replace(b'"schemaVersion": 2', b'"schemaVersion": 3'))
+        manifest.write_bytes(self.manifest.replace(b'"schemaVersion": 2', b'"schemaVersion": 4'))
         with self.assertRaises(ValidationError):
             build_package(self.source, [])
+
+    def test_requires_nonempty_backend_and_frontend_entrypoints(self):
+        import json
+
+        manifest = json.loads(self.manifest)
+        manifest["schemaVersion"] = 3
+        manifest["code"] = {
+            "backend": {"component": "component.wasm"},
+            "frontend": [{
+                "id": "fixture-panel",
+                "document": "index.html",
+                "title": "Fixture",
+                "placement": "workspace",
+            }],
+        }
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        (self.source / "component.wasm").write_bytes(b"\0asm\r\0\1\0")
+        (self.source / "index.html").write_text("<p>Fixture</p>", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Include every declared"):
+            build_package(self.source, ["component.wasm"])
+        package, metadata = build_package(self.source, ["component.wasm", "index.html"])
+        self.assertEqual(metadata["manifestSchemaVersion"], 3)
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertIn("component.wasm", archive.namelist())
+            self.assertIn("index.html", archive.namelist())

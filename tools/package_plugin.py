@@ -61,6 +61,9 @@ def build_package(root, extra_files):
     manifest = json.loads(manifest_bytes.decode("utf-8"), object_pairs_hook=unique_fields)
     schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(manifest)
+    setting_ids = [setting["id"] for setting in manifest.get("settings", [])]
+    if len(setting_ids) != len(set(setting_ids)):
+        raise ValueError("Duplicate plugin setting ID")
 
     buffer = io.BytesIO()
     remaining = MAX_PACKAGE - len(manifest_bytes)

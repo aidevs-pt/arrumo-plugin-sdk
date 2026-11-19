@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "example-transcription",
   "name": "Example Transcription Provider",
   "description": "A sample declaration for a plugin that transcribes footage.",
@@ -8,5 +8,23 @@
       "name": "Transcription",
       "description": "Convert the audio track into timestamped text."
     }
-  }
+  },
+  "settings": [
+    {
+      "id": "api-key",
+      "label": "API key",
+      "description": "Credential used to call the transcription service.",
+      "kind": "secret",
+      "scope": "app",
+      "required": true
+    },
+    {
+      "id": "language",
+      "label": "Language",
+      "description": "Language hint for transcription in this workspace.",
+      "kind": "string",
+      "scope": "workspace",
+      "required": false
+    }
+  ]
 }

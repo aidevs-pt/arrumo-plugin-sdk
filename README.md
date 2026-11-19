@@ -41,3 +41,9 @@ The tool validates and includes the root manifest automatically. Pass each addit
 Manifest schema v2 can include up to 64 entries in `settings`. Give each entry a unique plugin-local `id`, a `label` and `description`, a `kind` of `string`, `boolean`, `integer`, or `secret`, a `scope` of `app` or `workspace`, and a boolean `required` flag. An omitted settings array is valid. SDK v1 remains readable by current hosts and has no settings declarations.
 
 An app-scoped field is configured at app scope only. A workspace-scoped field can have an app default and a workspace override. Clearing an override restores the app default. A required field needs a configured value before a host can use the plugin for work that depends on that field. The manifest declares metadata only. Values, defaults, and credentials are never part of a declaration. The host currently validates and displays declarations through its catalog API. The host validates and resolves ordinary values separately. Secure credential storage requires separate host support.
+
+### Bundled transcription adapter
+
+The [transcription descriptor](transcription.schema.json) is a versioned host contract for reviewed, bundled providers. The descriptor identifies a plugin with the `transcription` capability and names a secret field declared in that plugin's manifest. It also declares the HTTPS endpoint, credential header, and model. The host reads the configured credential from its system store and builds the request itself.
+
+The `timed-words-multipart` transport posts a WAV as `file` with `model_id` and word timestamp granularity. It accepts a response with `language_code`, `text`, and timed word tokens, and returns normalized word records. The host limits request and response sizes and disables redirects. Installing an arbitrary package does not activate a credential-bearing transport.

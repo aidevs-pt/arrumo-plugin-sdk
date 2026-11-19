@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo bundled transcription adapter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "pluginId", "protocol", "endpoint", "credentialSetting",
+    "credentialHeader", "model"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "pluginId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+    "protocol": {"const": "timed-words-multipart"},
+    "endpoint": {"type": "string", "pattern": "^https://[^\\s?#]+$"},
+    "credentialSetting": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+    "credentialHeader": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+    "model": {"type": "string", "pattern": "\\S"}
+  }
+}

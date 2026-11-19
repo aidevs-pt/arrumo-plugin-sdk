@@ -16,7 +16,8 @@
         1,
         2,
         3,
-        4
+        4,
+        5
       ]
     },
     "id": {
@@ -213,8 +214,39 @@
                   "workspace",
                   "completed_video"
                 ]
+              },
+              "permissions": {
+                "type": "array",
+                "maxItems": 1,
+                "items": {
+                  "const": "workspace-context-read"
+                }
               }
-            }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "required": [
+                    "permissions"
+                  ],
+                  "properties": {
+                    "permissions": {
+                      "minItems": 1
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "placement": {
+                      "enum": [
+                        "workspace",
+                        "completed_video"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         }
       },
@@ -261,7 +293,8 @@
             "enum": [
               2,
               3,
-              4
+              4,
+              5
             ]
           }
         }
@@ -278,7 +311,8 @@
           "schemaVersion": {
             "enum": [
               3,
-              4
+              4,
+              5
             ]
           }
         }
@@ -312,7 +346,45 @@
       "then": {
         "properties": {
           "schemaVersion": {
-            "const": 4
+            "enum": [
+              4,
+              5
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "required": [
+              "frontend"
+            ],
+            "properties": {
+              "frontend": {
+                "contains": {
+                  "required": [
+                    "permissions"
+                  ],
+                  "properties": {
+                    "permissions": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "const": 5
           }
         }
       }

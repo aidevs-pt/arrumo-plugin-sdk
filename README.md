@@ -82,6 +82,12 @@ Invoke the plugin with that workspace ID. The host links `read-workspace-context
 
 ### Render a frontend panel
 
-Each frontend entrypoint must be a self-contained UTF-8 HTML document of at most 512 KiB. Inline its JavaScript and styles and use data URLs for embedded images or fonts. The desktop app loads the document from a dedicated local protocol in an opaque sandboxed frame. The panel receives no native command bridge or workspace data. The content policy restricts resource loads to the document and its inline assets.
+Each frontend entrypoint must be a self-contained UTF-8 HTML document of at most 512 KiB. Inline its JavaScript and styles and use data URLs for embedded images or fonts. The desktop app loads the document from a dedicated local protocol in an opaque sandboxed frame. The panel has no direct native command bridge. Workspace data is available only through a declared permission and an explicit grant. The content policy restricts resource loads to the document and its inline assets.
 
 Package the [frontend counter example](examples/frontend) with `--include index.html`. After installing the ZIP, open the panel under **Plugin panels** in desktop Settings.
+
+### Read context from a frontend panel
+
+In schema v5, a `workspace` or `completed_video` panel can declare `"permissions": ["workspace-context-read"]`. The operator must grant access to the installed package in the current workspace. The workspace is selected by the host.
+
+Send a message to `parent` with `type: "arrumo:workspace-context"` and `nonce: location.hash.slice(1)`. Transfer one `MessageChannel` port with the request. The host responds once per panel opening on that port with `{ok: true, context: string | null}` or `{ok: false, error: "context_unavailable"}`. The package revision, panel declaration, and workspace grant are checked at the time of the request. See the [workspace panel example](examples/workspace-panel). Use text rendering for the returned context.

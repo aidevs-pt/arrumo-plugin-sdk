@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Context reader</title></head>
+<body>
+  <button type="button" id="read">Read shared context</button>
+  <pre id="output" aria-live="polite"></pre>
+  <script>
+    const button = document.querySelector("#read");
+    const output = document.querySelector("#output");
+    button.addEventListener("click", () => {
+      button.disabled = true;
+      const channel = new MessageChannel();
+      channel.port1.onmessage = ({ data }) => {
+        output.textContent = data.ok ? data.context ?? "No context set." : "Context access unavailable.";
+        channel.port1.close();
+      };
+      parent.postMessage({
+        type: "arrumo:workspace-context",
+        nonce: location.hash.slice(1)
+      }, "*", [channel.port2]);
+    });
+  </script>
+</body>
+</html>

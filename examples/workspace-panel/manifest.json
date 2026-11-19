@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 5,
+  "id": "workspace-context-panel",
+  "name": "Workspace Context Panel",
+  "description": "Displays the selected workspace context after permission is granted.",
+  "capabilities": {
+    "context-panel": {
+      "name": "Context panel",
+      "description": "Display explicitly shared context."
+    }
+  },
+  "code": {
+    "frontend": [
+      {
+        "id": "context",
+        "title": "Plugin context reader",
+        "document": "index.html",
+        "placement": "workspace",
+        "permissions": ["workspace-context-read"]
+      }
+    ]
+  }
+}

@@ -91,3 +91,9 @@ Package the [frontend counter example](examples/frontend) with `--include index.
 In schema v5, a `workspace` or `completed_video` panel can declare `"permissions": ["workspace-context-read"]`. The operator must grant access to the installed package in the current workspace. The workspace is selected by the host.
 
 Send a message to `parent` with `type: "arrumo:workspace-context"` and `nonce: location.hash.slice(1)`. Transfer one `MessageChannel` port with the request. The host responds once per panel opening on that port with `{ok: true, context: string | null}` or `{ok: false, error: "context_unavailable"}`. The package revision, panel declaration, and workspace grant are checked at the time of the request. See the [workspace panel example](examples/workspace-panel). Use text rendering for the returned context.
+
+### Declare backend actions
+
+Schema v6 lets a plugin with a backend component declare up to 64 entries in `actions`. Each entry has a unique `id`, a human-readable `label` and `description`, and `scope` set to `app` or `workspace`. The host calls `invoke` with JSON shaped as `{"action":"action-id","input":...}`, using the caller’s explicit app or workspace scope. Actions remain subject to component sandbox limits and the plugin’s grants. Invoking a package that declares actions requires a declared action ID.
+
+The [action example](examples/actions/manifest.json) uses the same compiled echo component as the backend example. Compile `examples/component/echo.wat` to `examples/actions/echo.wasm`, package with `--include echo.wasm`, and install the ZIP. Use `plugin-actions` to discover actions and send JSON on stdin to `invoke-plugin-action action-echo echo app`.

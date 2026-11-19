@@ -65,6 +65,9 @@ def build_package(root, extra_files):
     if len(setting_ids) != len(set(setting_ids)):
         raise ValueError("Duplicate plugin setting ID")
 
+    action_ids = [action["id"] for action in manifest.get("actions", [])]
+    if len(action_ids) != len(set(action_ids)):
+        raise ValueError("Duplicate plugin action ID")
     code = manifest.get("code", {})
     surfaces = code.get("frontend", [])
     if len({surface["id"] for surface in surfaces}) != len(surfaces):

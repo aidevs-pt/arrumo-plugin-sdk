@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 6,
+  "id": "action-echo",
+  "name": "Action Echo",
+  "description": "Returns the action envelope passed to its isolated backend.",
+  "capabilities": {
+    "echo": {
+      "name": "Echo",
+      "description": "Return the action request unchanged."
+    }
+  },
+  "code": {
+    "backend": {
+      "component": "echo.wasm"
+    }
+  },
+  "actions": [
+    {
+      "id": "echo",
+      "label": "Echo JSON",
+      "description": "Return the requested action ID and supplied JSON.",
+      "scope": "app"
+    },
+    {
+      "id": "workspace-echo",
+      "label": "Echo JSON in workspace",
+      "description": "Return the requested action ID and supplied JSON in the selected workspace.",
+      "scope": "workspace"
+    }
+  ]
+}

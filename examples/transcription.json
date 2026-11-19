@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "example-transcription",
+  "name": "Example Transcription Provider",
+  "description": "A sample declaration for a plugin that transcribes footage.",
+  "capabilities": {
+    "transcription": {
+      "name": "Transcription",
+      "description": "Convert the audio track into timestamped text."
+    }
+  }
+}

@@ -109,3 +109,48 @@ class PackagePluginTest(unittest.TestCase):
             with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
                 write(changed)
                 build_package(self.source, [name])
+
+    def test_validates_image_adapter_placeholders_and_model_setting(self):
+        manifest = json.loads(self.manifest)
+        manifest["capabilities"]["image-generation"] = {
+            "name": "Image generation", "description": "Generate images from prompts.",
+        }
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        name = "image-generation.json"
+        descriptor = {
+            "schemaVersion": 1, "pluginId": "example-transcription",
+            "endpoint": "https://example.com/v1/models/{model}:generate",
+            "credentialSetting": "api-key", "credentialHeader": "x-api-key", "credentialPrefix": "",
+            "model": {"default": "image-1", "setting": "language"},
+            "aspectRatios": {"16:9": "1536x1024", "9:16": "1024x1536", "1:1": "1024x1024"},
+            "request": {"input": [{"text": "{prompt}"}], "size": "{aspectRatio}"},
+            "response": {"items": "/candidates", "image": "/data"},
+            "maxImageBytes": 10000000,
+        }
+        adapter = self.source / name
+
+        def write(value):
+            adapter.write_text(json.dumps(value), encoding="utf-8")
+
+        write(descriptor)
+        package, _ = build_package(self.source, [name])
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertEqual(json.loads(archive.read(name)), descriptor)
+
+        for changed, error in (
+            (dict(descriptor, request={"size": "{aspectRatio}"}), "must contain \\{prompt\\}"),
+            (dict(descriptor, model={"default": "image-1", "setting": "api-key"}), "declared string setting"),
+            (dict(descriptor, credentialSetting="language"), "matching secret setting"),
+        ):
+            with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
+                write(changed)
+                build_package(self.source, [name])
+
+        for changed in (
+            dict(descriptor, endpoint="http://example.com/v1/images"),
+            dict(descriptor, aspectRatios={"16:9": "wide"}),
+            dict(descriptor, model={"default": "../image"}),
+        ):
+            with self.subTest(changed=changed), self.assertRaises(Exception):
+                write(changed)
+                build_package(self.source, [name])

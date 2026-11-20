@@ -19,6 +19,7 @@ ADAPTERS = {
     "transcription.json": ("transcription.schema.json", "transcription"),
     "transcription-timed.json": ("transcription.schema.json", "transcription"),
     "speech-synthesis.json": ("speech-synthesis.schema.json", "text-to-speech"),
+    "image-generation.json": ("image-generation.schema.json", "image-generation"),
 }
 
 
@@ -62,6 +63,14 @@ def validate_package_paths(names):
             raise ValueError(f"Duplicate package path: {name}")
         folded.add(canonical)
 
+def template_uses(value, placeholder):
+    if isinstance(value, dict):
+        return any(template_uses(item, placeholder) for item in value.values())
+    if isinstance(value, list):
+        return any(template_uses(item, placeholder) for item in value)
+    return value == placeholder
+
+
 def validate_adapter(name, data, manifest):
     schema_name, capability = ADAPTERS[name]
     schema = json.loads((SCHEMA_DIR / schema_name).read_text(encoding="utf-8"))
@@ -76,6 +85,15 @@ def validate_adapter(name, data, manifest):
     )
     if credential is None or (capability == "text-to-speech" and credential["scope"] != "workspace"):
         raise ValueError(f"Adapter requires a matching secret setting: {name}")
+    if name == "image-generation.json":
+        model_setting = descriptor["model"].get("setting")
+        if model_setting is not None and not any(
+            setting["id"] == model_setting and setting["kind"] == "string"
+            for setting in manifest.get("settings", [])
+        ):
+            raise ValueError("Image adapter model setting must be a declared string setting")
+        if not template_uses(descriptor["request"], "{prompt}"):
+            raise ValueError("Image adapter request must contain {prompt}")
     if name == "transcription-timed.json" and "words" not in descriptor["response"]:
         raise ValueError("Timed transcription adapter requires a timing mapping")
 

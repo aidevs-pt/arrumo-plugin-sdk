@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo image generation adapter",
+  "description": "Declares how Arrumo asks a provider for one image. The host fills placeholders, sends the request with the workspace credential and saves the decoded image as a workspace asset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pluginId",
+    "endpoint",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "model",
+    "aspectRatios",
+    "request",
+    "response",
+    "maxImageBytes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "pluginId": {
+      "$ref": "#/$defs/id"
+    },
+    "endpoint": {
+      "description": "HTTPS endpoint. A path segment may contain {model}, which is replaced by the selected model.",
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
+    },
+    "credentialSetting": {
+      "$ref": "#/$defs/id"
+    },
+    "credentialHeader": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "credentialPrefix": {
+      "enum": [
+        "",
+        "Bearer "
+      ]
+    },
+    "model": {
+      "description": "The model used unless the creator sets the named string setting.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default"
+      ],
+      "properties": {
+        "default": {
+          "$ref": "#/$defs/model"
+        },
+        "setting": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "aspectRatios": {
+      "description": "Provider values for each aspect ratio Arrumo asks for, substituted for {aspectRatio}.",
+      "type": "object",
+      "required": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "maxProperties": 16,
+      "propertyNames": {
+        "pattern": "^[1-9][0-9]?:[1-9][0-9]?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32
+      }
+    },
+    "request": {
+      "description": "JSON body. String values that are exactly {prompt}, {aspectRatio} or {model} are replaced; {prompt} must appear.",
+      "type": "object"
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image"
+      ],
+      "properties": {
+        "items": {
+          "description": "Optional pointer to an array; the first item where `image` resolves is used.",
+          "$ref": "#/$defs/pointer"
+        },
+        "image": {
+          "description": "Pointer to the base64 image data, relative to the item when `items` is set.",
+          "$ref": "#/$defs/pointer"
+        }
+      }
+    },
+    "maxImageBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20971520
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "model": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "pointer": {
+      "type": "string",
+      "maxLength": 256,
+      "pattern": "^(/[^/]*)+$"
+    }
+  }
+}

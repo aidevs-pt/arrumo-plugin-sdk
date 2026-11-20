@@ -159,6 +159,26 @@ validate the audio response before storing it. The host owns credentials and
 must redact provider errors. The descriptor is for trusted provider inputs.
 Host dispatch is pending.
 
+### Describe an image generation adapter
+
+A plugin declaring `image-generation` can provide an `image-generation.json`
+[descriptor](image-generation.schema.json) for an HTTPS JSON POST API that
+returns one base64-encoded image. The `request` is a JSON template: string
+values that are exactly `{prompt}`, `{aspectRatio}` or `{model}` are replaced,
+and `{prompt}` must appear. `aspectRatios` maps the ratios Arrumo asks for
+(`16:9`, `9:16`, `1:1`, and optionally more) to the provider's value, such as a
+pixel size or the ratio itself. The endpoint may contain `{model}` in a path
+segment. `model.default` is used unless the creator sets the string setting
+named by `model.setting`, so providers can move to newer models without a new
+release. `response.image` points at the base64 data; with `response.items`, the
+host uses the first array item where that pointer resolves.
+
+The host checks the descriptor against the manifest, sends the workspace secret
+in the declared header, refuses redirects, bounds the response by
+`maxImageBytes`, verifies that the decoded bytes are a PNG, JPEG or WebP image,
+and stores it as a workspace asset. Providers are tried in the run's captured
+`image-generation` order; one without a configured credential is skipped.
+
 ### Structured agent runs
 
 Schema version 7 lets an agent provider declare `agentProvider.cli.structuredRun`.

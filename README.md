@@ -44,7 +44,7 @@ An app-scoped field is configured at app scope only. A workspace-scoped field ca
 
 ### Bundled transcription adapter
 
-The [transcription descriptor](transcription.schema.json) is a versioned host contract for reviewed, bundled providers. The descriptor identifies a plugin with the `transcription` capability and names a secret field declared in that plugin's manifest. It also declares the HTTPS endpoint, credential header, and model. The host reads the configured credential from its system store and builds the request itself.
+The [transcription descriptor](transcription.schema.json) is a versioned host contract for reviewed, bundled providers. The descriptor identifies a plugin with the `transcription` capability and names a secret field declared in that plugin's manifest. It also declares the HTTPS endpoint, credential header, and model. The host reads the configured credential from its system store and builds the request itself. Bundled plugins can supply a separate `transcription-timed.json` using the same schema for delivery captions. Its `response.words` mapping describes timed text units, which may be words or full segments. Without a timed descriptor, the host uses the standard descriptor when it declares a timing mapping.
 
 The descriptor declares the multipart file field, static form fields, credential prefix, input limit, and JSON response field pointers. Optional word mappings select timestamped tokens and optional speaker labels. The host applies these declarations using a generic HTTPS transport with redirects disabled. Only descriptors in the reviewed application bundle can use this transport.
 

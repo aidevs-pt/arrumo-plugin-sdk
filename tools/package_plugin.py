@@ -40,8 +40,7 @@ def unique_fields(pairs):
     return fields
 
 
-def build_package(root, extra_files):
-    names = ["manifest.json", *extra_files]
+def validate_package_paths(names):
     if len(names) > MAX_ENTRIES:
         raise ValueError("A package can contain at most 512 files")
     folded = set()
@@ -56,6 +55,10 @@ def build_package(root, extra_files):
         if canonical in folded:
             raise ValueError(f"Duplicate package path: {name}")
         folded.add(canonical)
+
+def build_package(root, extra_files):
+    names = ["manifest.json", *extra_files]
+    validate_package_paths(names)
 
     manifest_bytes = read_file(root, "manifest.json", MAX_MANIFEST)
     manifest = json.loads(manifest_bytes.decode("utf-8"), object_pairs_hook=unique_fields)

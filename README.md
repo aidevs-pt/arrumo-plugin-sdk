@@ -121,3 +121,9 @@ The renderer writes `/output/artifacts.json` conforming to the motion artifact s
 The Linux runner also requires `prlimit` from util-linux. Use `--max-output-bytes` to set the hard per-file write limit and the aggregate size limit for unique files referenced by the artifact batch. The default is 512 MiB. The aggregate check runs after rendering. A worker that can create many files still needs a job-level filesystem quota.
 
 Use `--max-scratch-bytes` to size the renderer's private `/tmp` filesystem. It defaults to 256 MiB. The runner sets both `HOME` and `TMPDIR` to that mount. This limit applies to temporary storage during execution. The separate job output directory is governed by the per-file and post-render checks above.
+
+#### Run a reviewed renderer ZIP
+
+A local worker can run a reviewed ZIP that declares a `motion-render` capability and includes `renderer.json` with a single `entrypoint` field naming a packaged shell script. Include both files with the packaging tool. The script runs inside the same Linux sandbox and writes the same `/output/artifacts.json` manifest.
+
+Run `python tools/run_motion_package.py <package.zip> --sha256 <reviewed-digest> --output <new-output-directory>`. Supply the digest from the reviewed package record. The worker checks the digest, expanded package limits, file paths, and manifest before invoking the script. It can mount an operator-provisioned toolchain with `--toolchain`. This command is explicit SDK worker execution. Installed editor plugins still need host dispatch and permission integration.

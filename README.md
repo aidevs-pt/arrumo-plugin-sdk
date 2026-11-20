@@ -111,3 +111,9 @@ Use the [motion artifact schema](motion-artifacts.schema.json) and [example batc
 File paths refer to the machine and filesystem where the host runs. If a renderer uses a mount such as `/output`, translate each path to its host-visible location before submission. The schema checks the input shape. Arrumo checks the lease and probes the actual media before committing the batch and emitting managed IDs.
 
 When an isolated renderer returns paths under `/output`, stop the renderer before resolving or importing its files. Run `python tools/resolve_motion_artifacts.py <host-output-directory>` with the artifact batch on stdin. It emits the batch with host-visible absolute paths on stdout and rejects missing files, traversal, and symlinks that resolve outside the output directory. Use a fresh output directory for each job and keep it private to the worker until the host finishes the import.
+
+#### Local Linux renderer runner
+
+`python tools/run_motion_renderer.py --project <project-directory> --output <new-output-directory> -- /usr/bin/sh /input/render.sh` launches an operator-selected renderer in Bubblewrap. The project is mounted read-only at `/input`, the job gets writable `/output` and temporary storage, and the runner clears inherited environment variables and isolates the network. An optional `--toolchain <directory>` is mounted read-only at `/renderer`. The output path must be new and outside both input directories. Set a wall-clock limit with `--timeout`.
+
+The renderer writes `/output/artifacts.json` conforming to the motion artifact schema and then exits. The SDK prints host-visible paths after validating that the files stay within the job directory. Use those paths with `submit_motion_artifacts`. The worker owns the job directory until submission finishes. This runner requires Linux with Bubblewrap and a compatible system toolchain. Installed editor packages and other operating systems need runtime integration separately.

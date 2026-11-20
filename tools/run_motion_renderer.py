@@ -16,17 +16,22 @@ else:
 
 
 DEFAULT_MAX_OUTPUT_BYTES = 512 * 1024 * 1024
+DEFAULT_MAX_SCRATCH_BYTES = 256 * 1024 * 1024
 
 
-def run_renderer(project, output, argv, timeout, toolchain=None, *, max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES):
+def run_renderer(
+    project, output, argv, timeout, toolchain=None, *,
+    max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES, max_scratch_bytes=DEFAULT_MAX_SCRATCH_BYTES,
+):
     if sys.platform != "linux":
         raise ValueError("The Bubblewrap runner requires Linux")
     if not argv or not argv[0].startswith(("/usr/bin/", "/renderer/", "/input/")):
         raise ValueError("Specify the renderer executable inside /usr/bin, /renderer, or /input")
     if timeout <= 0:
         raise ValueError("The timeout must be positive")
-    if not isinstance(max_output_bytes, int) or not 0 < max_output_bytes <= 2**63 - 1:
-        raise ValueError("The output byte limit must be a positive signed 64-bit integer")
+    for label, limit in (("output", max_output_bytes), ("scratch", max_scratch_bytes)):
+        if not isinstance(limit, int) or not 0 < limit <= 2**63 - 1:
+            raise ValueError(f"The {label} byte limit must be a positive signed 64-bit integer")
 
     project = Path(project).resolve(strict=True)
     output = Path(output).resolve()
@@ -43,9 +48,10 @@ def run_renderer(project, output, argv, timeout, toolchain=None, *, max_output_b
     command = [
         "bwrap", "--unshare-all", "--die-with-parent", "--new-session",
         "--clearenv", "--setenv", "PATH", "/usr/bin", "--setenv", "HOME", "/tmp",
+        "--setenv", "TMPDIR", "/tmp",
         "--ro-bind", "/usr", "/usr",
         "--symlink", "usr/lib", "/lib", "--symlink", "usr/lib64", "/lib64",
-        "--dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp",
+        "--dev", "/dev", "--proc", "/proc", "--size", str(max_scratch_bytes), "--tmpfs", "/tmp",
         "--ro-bind", str(project), "/input", "--bind", str(output), "/output",
         "--chdir", "/input",
     ]
@@ -81,13 +87,14 @@ def main():
     parser.add_argument("--toolchain", type=Path)
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--max-output-bytes", type=int, default=DEFAULT_MAX_OUTPUT_BYTES)
+    parser.add_argument("--max-scratch-bytes", type=int, default=DEFAULT_MAX_SCRATCH_BYTES)
     parser.add_argument("renderer", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     renderer = args.renderer[1:] if args.renderer[:1] == ["--"] else args.renderer
     try:
         print(json.dumps(run_renderer(
             args.project, args.output, renderer, args.timeout, args.toolchain,
-            max_output_bytes=args.max_output_bytes,
+            max_output_bytes=args.max_output_bytes, max_scratch_bytes=args.max_scratch_bytes,
         )))
     except subprocess.TimeoutExpired:
         parser.exit(1, "Renderer exceeded its time limit\n")

@@ -21,6 +21,8 @@ class RenderWorkerTests(unittest.TestCase):
         def render(argv, **options):
             self.assertIn("--unshare-all", argv)
             self.assertIn("--clearenv", argv)
+            scratch = argv.index("--size")
+            self.assertEqual(argv[scratch:scratch + 4], ["--size", "4096", "--tmpfs", "/tmp"])
             start = argv.index(str(self.project.resolve())) - 1
             self.assertEqual(argv[start:start + 3], ["--ro-bind", str(self.project.resolve()), "/input"])
             self.assertEqual(argv[-6:], [
@@ -35,7 +37,7 @@ class RenderWorkerTests(unittest.TestCase):
 
         with patch("tools.run_motion_renderer.subprocess.run", side_effect=render):
             batch = run_renderer(self.project, self.output, ["/input/render", "composition"], 15,
-                                 max_output_bytes=1024)
+                                 max_output_bytes=1024, max_scratch_bytes=4096)
         self.assertEqual(batch[0]["preview"], str((self.output / "preview.mp4").resolve()))
 
     @patch("tools.run_motion_renderer.sys.platform", "linux")

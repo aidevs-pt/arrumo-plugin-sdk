@@ -14,5 +14,16 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - run: python -m pip install jsonschema==4.19.2
+      - run: python -m pip install -r motion-worker-requirements.txt
       - run: python -m unittest discover -s tests
+      - name: Build the Linux motion worker
+        run: |
+          mkdir dist
+          python tools/package_motion_worker.py dist/arrumo-motion-worker-linux.zip
+          cd dist
+          sha256sum arrumo-motion-worker-linux.zip > SHA256SUMS
+      - uses: actions/upload-artifact@v6
+        with:
+          name: arrumo-motion-worker-linux
+          path: dist/
+          if-no-files-found: error

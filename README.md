@@ -159,6 +159,31 @@ validate the audio response before storing it. The host owns credentials and
 must redact provider errors. The descriptor is for trusted provider inputs.
 Host dispatch is pending.
 
+### Structured agent runs
+
+Schema version 7 lets an agent provider declare `agentProvider.cli.structuredRun`.
+The host uses it for production stages such as writing the script. It runs the
+provider's executable once, in an empty temporary directory, with the prompt on
+stdin and a JSON Schema the answer must follow.
+
+```json
+"structuredRun": {
+  "args": ["exec", "--sandbox", "read-only", "--output-schema", "{schemaPath}",
+           "--output-last-message", "{outputPath}", "-"],
+  "result": { "source": "outputFile" }
+}
+```
+
+Placeholders are whole arguments: `{schema}` is the schema as JSON, `{schemaPath}`
+a file containing it, and `{outputPath}` a file the agent writes its answer to.
+Every run must pass the schema through one of the first two. `result.source` is
+`outputFile` or `stdout`. `pointer` selects the answer inside that document, and
+`errorPointer` names a boolean that is true when the agent reports a failure.
+The host validates the answer against the schema, bounds its size, enforces a
+time limit, and treats a non-zero exit as a failure. Providers own the flags that
+keep the run non-interactive and free of tools, hooks and network access the
+stage does not need.
+
 ### Local subtitle translators
 
 A bundled provider can declare the `subtitle-translation` capability and ship

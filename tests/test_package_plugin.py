@@ -51,7 +51,7 @@ class PackagePluginTest(unittest.TestCase):
         manifest.write_bytes(b'{"id":"first","id":"second"}')
         with self.assertRaisesRegex(ValueError, "Duplicate manifest field"):
             build_package(self.source, [])
-        manifest.write_bytes(self.manifest.replace(b'"schemaVersion": 2', b'"schemaVersion": 7'))
+        manifest.write_bytes(self.manifest.replace(b'"schemaVersion": 2', b'"schemaVersion": 8'))
         with self.assertRaises(ValidationError):
             build_package(self.source, [])
 

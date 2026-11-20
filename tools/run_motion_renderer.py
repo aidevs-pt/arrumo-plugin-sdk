@@ -19,9 +19,10 @@ DEFAULT_MAX_OUTPUT_BYTES = 512 * 1024 * 1024
 DEFAULT_MAX_SCRATCH_BYTES = 256 * 1024 * 1024
 
 
-def run_renderer(
+def run_sandbox(
     project, output, argv, timeout, toolchain=None, *,
     max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES, max_scratch_bytes=DEFAULT_MAX_SCRATCH_BYTES,
+    inputs=None,
 ):
     if sys.platform != "linux":
         raise ValueError("The Bubblewrap runner requires Linux")
@@ -44,6 +45,17 @@ def run_renderer(
         if not toolchain.is_dir() or output.is_relative_to(toolchain) or toolchain.is_relative_to(output):
             raise ValueError("Use a separate read-only toolchain directory")
 
+    if inputs is not None:
+        inputs = Path(inputs).resolve(strict=True)
+        if not inputs.is_dir() or any(
+            inputs.is_relative_to(path) or path.is_relative_to(inputs)
+            for path in (project, output)
+        ):
+            raise ValueError("Use a separate read-only media input directory")
+        for entry in inputs.rglob("*"):
+            if entry.is_symlink() or not (entry.is_dir() or entry.is_file()):
+                raise ValueError("Media inputs must be regular files and directories")
+
     output.mkdir(mode=0o700)
     command = [
         "bwrap", "--unshare-all", "--die-with-parent", "--new-session",
@@ -55,6 +67,8 @@ def run_renderer(
         "--ro-bind", str(project), "/input", "--bind", str(output), "/output",
         "--chdir", "/input",
     ]
+    if inputs is not None:
+        command.extend(["--ro-bind", str(inputs), "/media"])
     if toolchain is not None:
         command.extend(["--ro-bind", str(toolchain), "/renderer"])
     subprocess.run(
@@ -63,6 +77,17 @@ def run_renderer(
         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
 
+    return output
+
+
+def run_renderer(
+    project, output, argv, timeout, toolchain=None, *,
+    max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES, max_scratch_bytes=DEFAULT_MAX_SCRATCH_BYTES,
+):
+    output = run_sandbox(
+        project, output, argv, timeout, toolchain,
+        max_output_bytes=max_output_bytes, max_scratch_bytes=max_scratch_bytes,
+    )
     manifest = output / "artifacts.json"
     if manifest.is_symlink() or not manifest.is_file():
         raise ValueError("The renderer must write a regular /output/artifacts.json file")

@@ -182,3 +182,23 @@ Repeat `--include` for each dependency the worker needs. The tool verifies the
 exact ZIP, checks member paths and entry types, applies the compressed and
 expanded size limits, and publishes the directory after the selected files
 have been written. Execution belongs to the consumer's configured runtime.
+
+### Run a reviewed media worker on Linux
+
+`tools/run_media_package.py` runs a reviewed Python entrypoint using the same
+Bubblewrap sandbox as the motion renderer. The package code is read-only at
+`/input`. A dedicated input directory is read-only at `/media`, and the
+worker writes to `/output`. The process uses a cleared environment and a
+separate network namespace. Pass only the media the job needs.
+
+```sh
+python3 tools/run_media_package.py package.zip --sha256 <reviewed-digest> \
+  --inputs /path/to/media --output /path/to/new-output \
+  --entrypoint tools/worker.py --include tools/helper.py
+```
+
+The worker writes `/output/result.json` as `{"file":"artifact.mp4"}` or names a
+WAV file in the same directory. The host must validate the media before
+importing it. This runner needs Bubblewrap, Python and any media tools used
+by the worker on Linux. The supported command uses a wall-clock timeout,
+bounded scratch and a per-file output limit.

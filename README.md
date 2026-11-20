@@ -152,3 +152,17 @@ the descriptor's Unicode character limit, refuse redirects, and bound and
 validate the audio response before storing it. The host owns credentials and
 must redact provider errors. The descriptor is for trusted provider inputs.
 Host dispatch is pending.
+
+### Local subtitle translators
+
+A bundled provider can declare the `subtitle-translation` capability and ship
+`tools/translate-subtitles.py` in its development checkout. The script reads
+a JSON object with `targetLanguage` and `cues` from stdin and writes an object
+with `translations` to stdout. Both cue arrays use `{ "cue": 1, "text": "…" }`
+items. Cue IDs are positive integers and must match exactly across the request
+and response. Translation adapters own provider authentication and must keep
+credentials out of the response.
+
+Auto-Dubbing resolves this entry point only for explicitly selected bundled
+plugin IDs in its local checkout workflow. This convention relies on trusted
+local plugin sources.

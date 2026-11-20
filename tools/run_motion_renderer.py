@@ -15,13 +15,18 @@ else:
     from resolve_motion_artifacts import MAX_BATCH_BYTES, resolve_artifacts
 
 
-def run_renderer(project, output, argv, timeout, toolchain=None):
+DEFAULT_MAX_OUTPUT_BYTES = 512 * 1024 * 1024
+
+
+def run_renderer(project, output, argv, timeout, toolchain=None, *, max_output_bytes=DEFAULT_MAX_OUTPUT_BYTES):
     if sys.platform != "linux":
         raise ValueError("The Bubblewrap runner requires Linux")
     if not argv or not argv[0].startswith(("/usr/bin/", "/renderer/", "/input/")):
         raise ValueError("Specify the renderer executable inside /usr/bin, /renderer, or /input")
     if timeout <= 0:
         raise ValueError("The timeout must be positive")
+    if not isinstance(max_output_bytes, int) or not 0 < max_output_bytes <= 2**63 - 1:
+        raise ValueError("The output byte limit must be a positive signed 64-bit integer")
 
     project = Path(project).resolve(strict=True)
     output = Path(output).resolve()
@@ -47,7 +52,8 @@ def run_renderer(project, output, argv, timeout, toolchain=None):
     if toolchain is not None:
         command.extend(["--ro-bind", str(toolchain), "/renderer"])
     subprocess.run(
-        [*command, "--", *argv], check=True, timeout=timeout,
+        [*command, "--", "/usr/bin/prlimit", f"--fsize={max_output_bytes}:{max_output_bytes}", "--", *argv],
+        check=True, timeout=timeout,
         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
 
@@ -58,7 +64,14 @@ def run_renderer(project, output, argv, timeout, toolchain=None):
         batch = source.read(MAX_BATCH_BYTES + 1)
     if len(batch) > MAX_BATCH_BYTES:
         raise ValueError("Motion artifact batch exceeds 128 KiB")
-    return resolve_artifacts(json.loads(batch), output)
+    artifacts = resolve_artifacts(json.loads(batch), output)
+    files = {
+        Path(item[role]) for item in artifacts
+        for role in ("preview", "thumbnail", "sound") if item.get(role)
+    }
+    if sum(file.stat().st_size for file in files) > max_output_bytes:
+        raise ValueError("Referenced motion artifacts exceed the output byte limit")
+    return artifacts
 
 
 def main():
@@ -67,11 +80,15 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--toolchain", type=Path)
     parser.add_argument("--timeout", type=int, default=120)
+    parser.add_argument("--max-output-bytes", type=int, default=DEFAULT_MAX_OUTPUT_BYTES)
     parser.add_argument("renderer", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     renderer = args.renderer[1:] if args.renderer[:1] == ["--"] else args.renderer
     try:
-        print(json.dumps(run_renderer(args.project, args.output, renderer, args.timeout, args.toolchain)))
+        print(json.dumps(run_renderer(
+            args.project, args.output, renderer, args.timeout, args.toolchain,
+            max_output_bytes=args.max_output_bytes,
+        )))
     except subprocess.TimeoutExpired:
         parser.exit(1, "Renderer exceeded its time limit\n")
     except subprocess.CalledProcessError:

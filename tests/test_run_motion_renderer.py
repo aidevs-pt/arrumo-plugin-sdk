@@ -23,7 +23,9 @@ class RenderWorkerTests(unittest.TestCase):
             self.assertIn("--clearenv", argv)
             start = argv.index(str(self.project.resolve())) - 1
             self.assertEqual(argv[start:start + 3], ["--ro-bind", str(self.project.resolve()), "/input"])
-            self.assertEqual(argv[-3:], ["--", "/input/render", "composition"])
+            self.assertEqual(argv[-6:], [
+                "--", "/usr/bin/prlimit", "--fsize=1024:1024", "--", "/input/render", "composition",
+            ])
             self.assertEqual(options["timeout"], 15)
             (self.output / "preview.mp4").write_bytes(b"fixture")
             (self.output / "artifacts.json").write_text(json.dumps([{
@@ -32,7 +34,8 @@ class RenderWorkerTests(unittest.TestCase):
             }]), encoding="utf-8")
 
         with patch("tools.run_motion_renderer.subprocess.run", side_effect=render):
-            batch = run_renderer(self.project, self.output, ["/input/render", "composition"], 15)
+            batch = run_renderer(self.project, self.output, ["/input/render", "composition"], 15,
+                                 max_output_bytes=1024)
         self.assertEqual(batch[0]["preview"], str((self.output / "preview.mp4").resolve()))
 
     @patch("tools.run_motion_renderer.sys.platform", "linux")
@@ -42,3 +45,17 @@ class RenderWorkerTests(unittest.TestCase):
         self.output.mkdir()
         with self.assertRaises(FileExistsError):
             run_renderer(self.project, self.output, ["/input/render"], 15)
+
+    @patch("tools.run_motion_renderer.sys.platform", "linux")
+    def test_rejects_total_referenced_bytes_over_limit(self):
+        def render(*args, **options):
+            for filename in ("preview.mp4", "sound.wav"):
+                (self.output / filename).write_bytes(b"1234")
+            (self.output / "artifacts.json").write_text(json.dumps([{
+                "kind": "transition", "title": "Wipe", "usage_markdown": "",
+                "preview": "/output/preview.mp4", "sound": "/output/sound.wav",
+            }]), encoding="utf-8")
+
+        with patch("tools.run_motion_renderer.subprocess.run", side_effect=render):
+            with self.assertRaisesRegex(ValueError, "exceed the output byte limit"):
+                run_renderer(self.project, self.output, ["/input/render"], 15, max_output_bytes=6)

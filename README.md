@@ -103,3 +103,9 @@ The [action example](examples/actions/manifest.json) uses the same compiled echo
 Use the [motion result schema](motion-result.schema.json) for the motion portion of an Assets stage result. The [example](examples/motion-result.json) references a managed video preview and thumbnail. Items can also reference audio and a profile. These are workspace-local asset and profile IDs allocated by Arrumo. The host checks ownership, media kinds, and the current generation lease before accepting the result.
 
 A renderer adapter runs in its own authorized environment. Import its finished preview and any supporting media through the host's asset import operation, then submit the returned IDs in `motion_items` for the run's Assets stage. Filesystem paths and executable source are outside this result contract. Generic WIT components cannot spawn external renderer processes or access the host filesystem. The schema supports producer-side validation of the JSON shape, while the host remains responsible for checking what each ID refers to.
+
+### Submit a local renderer batch
+
+Use the [motion artifact schema](motion-artifacts.schema.json) and [example batch](examples/motion-artifacts.json) when the renderer has produced local files and the worker holds the Assets-stage lease. Pass the batch JSON to the editor CLI as the final argument of `submit-motion-artifacts <workspace-id> <run-id> <attempt> <artifacts-json>`. With MCP or A2A, pass it as `artifacts` to `submit_motion_artifacts` together with `workspaceId`, `runId`, and `attempt`.
+
+File paths refer to the machine and filesystem where the host runs. If a renderer uses a mount such as `/output`, translate each path to its host-visible location before submission. The schema checks the input shape. Arrumo checks the lease and probes the actual media before committing the batch and emitting managed IDs.

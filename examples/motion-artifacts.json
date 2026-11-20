@@ -1,0 +1,9 @@
+[
+  {
+    "kind": "animation",
+    "title": "Product label reveal",
+    "usage_markdown": "Use when the product first appears.",
+    "preview": "/output/label-reveal.mp4",
+    "thumbnail": "/output/label-reveal.png"
+  }
+]

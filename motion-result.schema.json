@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo Assets stage motion result",
+  "type": "object",
+  "required": ["motion_items"],
+  "properties": {
+    "motion_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/motionItem"}
+    }
+  },
+  "$defs": {
+    "id": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "optionalId": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "motionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "title", "usage_markdown", "preview_asset_id"],
+      "properties": {
+        "kind": {"enum": ["animation", "transition"]},
+        "title": {"type": "string", "pattern": "\\S"},
+        "usage_markdown": {"type": "string"},
+        "profile_id": {"$ref": "#/$defs/optionalId"},
+        "preview_asset_id": {"$ref": "#/$defs/id"},
+        "thumbnail_asset_id": {"$ref": "#/$defs/optionalId"},
+        "sound_asset_id": {"$ref": "#/$defs/optionalId"}
+      }
+    }
+  }
+}

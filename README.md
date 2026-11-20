@@ -97,3 +97,9 @@ Send a message to `parent` with `type: "arrumo:workspace-context"` and `nonce: l
 Schema v6 lets a plugin with a backend component declare up to 64 entries in `actions`. Each entry has a unique `id`, a human-readable `label` and `description`, and `scope` set to `app` or `workspace`. The host calls `invoke` with JSON shaped as `{"action":"action-id","input":...}`, using the caller’s explicit app or workspace scope. Actions remain subject to component sandbox limits and the plugin’s grants. Invoking a package that declares actions requires a declared action ID.
 
 The [action example](examples/actions/manifest.json) uses the same compiled echo component as the backend example. Compile `examples/component/echo.wat` to `examples/actions/echo.wasm`, package with `--include echo.wasm`, and install the ZIP. Use `plugin-actions` to discover actions and send JSON on stdin to `invoke-plugin-action action-echo echo app`.
+
+### Hand off rendered motion media
+
+Use the [motion result schema](motion-result.schema.json) for the motion portion of an Assets stage result. The [example](examples/motion-result.json) references a managed video preview and thumbnail. Items can also reference audio and a profile. These are workspace-local asset and profile IDs allocated by Arrumo. The host checks ownership, media kinds, and the current generation lease before accepting the result.
+
+A renderer adapter runs in its own authorized environment. Import its finished preview and any supporting media through the host's asset import operation, then submit the returned IDs in `motion_items` for the run's Assets stage. Filesystem paths and executable source are outside this result contract. Generic WIT components cannot spawn external renderer processes or access the host filesystem. The schema supports producer-side validation of the JSON shape, while the host remains responsible for checking what each ID refers to.

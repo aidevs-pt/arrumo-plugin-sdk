@@ -1,0 +1,11 @@
+{
+  "motion_items": [
+    {
+      "kind": "animation",
+      "title": "Product label reveal",
+      "usage_markdown": "Use when the product first appears.",
+      "preview_asset_id": 12,
+      "thumbnail_asset_id": 13
+    }
+  ]
+}

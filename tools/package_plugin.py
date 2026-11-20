@@ -13,7 +13,13 @@ from jsonschema import Draft202012Validator, ValidationError
 MAX_PACKAGE = 16 * 1024 * 1024
 MAX_MANIFEST = 64 * 1024
 MAX_ENTRIES = 512
-SCHEMA = Path(__file__).resolve().parent.parent / "manifest.schema.json"
+SCHEMA_DIR = Path(__file__).resolve().parent.parent
+SCHEMA = SCHEMA_DIR / "manifest.schema.json"
+ADAPTERS = {
+    "transcription.json": ("transcription.schema.json", "transcription"),
+    "transcription-timed.json": ("transcription.schema.json", "transcription"),
+    "speech-synthesis.json": ("speech-synthesis.schema.json", "text-to-speech"),
+}
 
 
 def read_file(root, name, limit):
@@ -56,6 +62,24 @@ def validate_package_paths(names):
             raise ValueError(f"Duplicate package path: {name}")
         folded.add(canonical)
 
+def validate_adapter(name, data, manifest):
+    schema_name, capability = ADAPTERS[name]
+    schema = json.loads((SCHEMA_DIR / schema_name).read_text(encoding="utf-8"))
+    descriptor = json.loads(data.decode("utf-8"), object_pairs_hook=unique_fields)
+    Draft202012Validator(schema).validate(descriptor)
+    if descriptor["pluginId"] != manifest["id"] or capability not in manifest["capabilities"]:
+        raise ValueError(f"Adapter does not match the manifest identity and capabilities: {name}")
+    credential = next(
+        (setting for setting in manifest.get("settings", [])
+         if setting["id"] == descriptor["credentialSetting"] and setting["kind"] == "secret"),
+        None,
+    )
+    if credential is None or (capability == "text-to-speech" and credential["scope"] != "workspace"):
+        raise ValueError(f"Adapter requires a matching secret setting: {name}")
+    if name == "transcription-timed.json" and "words" not in descriptor["response"]:
+        raise ValueError("Timed transcription adapter requires a timing mapping")
+
+
 def build_package(root, extra_files):
     names = ["manifest.json", *extra_files]
     validate_package_paths(names)
@@ -88,8 +112,11 @@ def build_package(root, extra_files):
             if name == "manifest.json":
                 data = manifest_bytes
             else:
-                data = read_file(root, name, remaining)
+                limit = min(remaining, MAX_MANIFEST) if name in ADAPTERS else remaining
+                data = read_file(root, name, limit)
                 remaining -= len(data)
+                if name in ADAPTERS:
+                    validate_adapter(name, data, manifest)
             if name in entrypoints and not data:
                 raise ValueError(f"Empty plugin code entrypoint: {name}")
             entry = zipfile.ZipInfo(name)

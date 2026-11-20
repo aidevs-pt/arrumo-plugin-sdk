@@ -1,5 +1,6 @@
 import hashlib
 import io
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -78,3 +79,33 @@ class PackagePluginTest(unittest.TestCase):
         with zipfile.ZipFile(io.BytesIO(package)) as archive:
             self.assertIn("component.wasm", archive.namelist())
             self.assertIn("index.html", archive.namelist())
+
+    def test_validates_provider_adapter_identity_credential_and_timings(self):
+        name = "transcription-timed.json"
+        descriptor = {
+            "schemaVersion": 2, "pluginId": "example-transcription",
+            "endpoint": "https://example.com/transcription",
+            "credentialSetting": "api-key", "credentialHeader": "authorization",
+            "credentialPrefix": "Bearer ", "maxAudioBytes": 100000,
+            "fileField": "file", "form": {"model": "example"},
+            "response": {"text": "/text", "language": "/language", "words": {
+                "items": "/segments", "text": "/text", "start": "/start", "end": "/end",
+            }},
+        }
+        adapter = self.source / name
+        def write(value):
+            adapter.write_text(json.dumps(value), encoding="utf-8")
+
+        write(descriptor)
+        package, _ = build_package(self.source, [name])
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertEqual(json.loads(archive.read(name)), descriptor)
+
+        for changed, error in (
+            (dict(descriptor, pluginId="other-plugin"), "manifest identity"),
+            (dict(descriptor, credentialSetting="language"), "matching secret setting"),
+            (dict(descriptor, response={"text": "/text", "language": "/language"}), "timing mapping"),
+        ):
+            with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
+                write(changed)
+                build_package(self.source, [name])

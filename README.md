@@ -166,3 +166,19 @@ credentials out of the response.
 Auto-Dubbing resolves this entry point only for explicitly selected bundled
 plugin IDs in its local checkout workflow. This convention relies on trusted
 local plugin sources.
+
+### Stage reviewed package files
+
+Use `tools/stage_plugin_package.py` to copy explicit files from an installed
+or bundled ZIP exported by the editor. Pass the digest reviewed in the catalog
+and a new destination directory.
+
+```sh
+python3 tools/stage_plugin_package.py package.zip /path/to/new-stage \
+  --sha256 <reviewed-digest> --include tools/worker.py
+```
+
+Repeat `--include` for each dependency the worker needs. The tool verifies the
+exact ZIP, checks member paths and entry types, applies the compressed and
+expanded size limits, and publishes the directory after the selected files
+have been written. Execution belongs to the consumer's configured runtime.

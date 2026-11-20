@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo speech synthesis adapter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "pluginId", "endpoint", "credentialSetting", "credentialHeader", "credentialPrefix", "textField", "body", "query", "responseFormat", "maxTextCharacters"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "pluginId": { "$ref": "#/$defs/id" },
+    "endpoint": {
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^https://[A-Za-z0-9.-]+(/[A-Za-z0-9._~-]+)+$"
+    },
+    "credentialSetting": { "$ref": "#/$defs/id" },
+    "credentialHeader": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "credentialPrefix": { "enum": ["", "Bearer "] },
+    "textField": { "$ref": "#/$defs/key" },
+    "body": {
+      "type": "object",
+      "maxProperties": 16,
+      "propertyNames": { "$ref": "#/$defs/key" },
+      "additionalProperties": { "type": "string", "maxLength": 256 }
+    },
+    "query": {
+      "type": "object",
+      "maxProperties": 16,
+      "propertyNames": { "$ref": "#/$defs/key" },
+      "additionalProperties": { "type": "string", "maxLength": 256 }
+    },
+    "responseFormat": { "enum": ["mp3", "wav"] },
+    "maxTextCharacters": { "type": "integer", "minimum": 1, "maximum": 10000 }
+  },
+  "$defs": {
+    "id": { "type": "string", "maxLength": 64, "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
+    "key": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$" }
+  }
+}

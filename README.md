@@ -133,3 +133,22 @@ Run `python tools/run_motion_package.py <package.zip> --sha256 <reviewed-digest>
 SDK conformance builds publish an `arrumo-motion-worker-linux` CI artifact containing the worker ZIP and `SHA256SUMS`. To build it locally, run `python tools/package_motion_worker.py arrumo-motion-worker-linux.zip` from the SDK checkout. The tool prints the archive's SHA-256. Select a trusted SDK revision or CI run, then verify the archive checksum before extracting it to a trusted location outside individual plugin directories.
 
 Install the extracted `motion-worker-requirements.txt` into the Python 3 environment that launches Arrumo. The host also needs Bubblewrap, util-linux with `prlimit`, and FFprobe. Set `ARRUMO_MOTION_SDK_WORKER` to the extracted absolute path of `tools/run_motion_package.py` when starting the editor, MCP, or A2A. Keep the extracted layout intact so the worker can load its SDK schemas.
+
+### Describe a speech synthesis adapter
+
+A plugin declaring `text-to-speech` can provide a `speech-synthesis.json`
+[descriptor](speech-synthesis.schema.json) for a reviewed HTTPS JSON POST API
+that takes a voice identifier as the last path segment. The descriptor names
+the JSON text field, static body and query values, response encoding, and the
+workspace secret setting used for authentication. The response encoding is
+`mp3` or `wav`.
+
+The host must match the descriptor's plugin ID to the manifest and check the
+credential against a declared workspace secret. It must reject credentials,
+queries, fragments, dot segments, and non-HTTPS URLs in the endpoint, and
+reject a static body key that conflicts with the text field. Hosts must append
+the caller's voice ID as one encoded path segment, encode query values, apply
+the descriptor's Unicode character limit, refuse redirects, and bound and
+validate the audio response before storing it. The host owns credentials and
+must redact provider errors. The descriptor is for trusted provider inputs.
+Host dispatch is pending.

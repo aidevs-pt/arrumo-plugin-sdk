@@ -157,7 +157,11 @@ the caller's voice ID as one encoded path segment, encode query values, apply
 the descriptor's Unicode character limit, refuse redirects, and bound and
 validate the audio response before storing it. The host owns credentials and
 must redact provider errors. The descriptor is for trusted provider inputs.
-Host dispatch is pending.
+
+An optional `voiceSetting` names a non-secret string setting declared in the
+manifest where creators choose a voice, and `defaultVoice` is the voice used
+when that setting is empty. Hosts use them when a workflow needs speech
+without asking for a voice, such as narrating a storyboarded video.
 
 ### Describe an image generation adapter
 

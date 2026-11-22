@@ -428,6 +428,328 @@
           }
         }
       }
+    },
+    "translations": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Schema 8: the plugin's own text in other languages. English stays in the manifest's fields; an en entry may only add labels such as setting choices. Every key must name something the manifest declares.",
+      "properties": {
+        "en": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 80
+            },
+            "description": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 500
+            },
+            "provider": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "pattern": "\\S",
+                  "maxLength": 80
+                }
+              }
+            },
+            "capabilities": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "description"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  }
+                }
+              }
+            },
+            "settings": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  },
+                  "choices": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "\\S",
+                      "maxLength": 80
+                    }
+                  }
+                }
+              }
+            },
+            "actions": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "label",
+                  "description"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 80
+            },
+            "description": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 500
+            },
+            "provider": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "pattern": "\\S",
+                  "maxLength": 80
+                }
+              }
+            },
+            "capabilities": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "description"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  }
+                }
+              }
+            },
+            "settings": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  },
+                  "choices": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "\\S",
+                      "maxLength": 80
+                    }
+                  }
+                }
+              }
+            },
+            "actions": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "label",
+                  "description"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "pt": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 80
+            },
+            "description": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 500
+            },
+            "provider": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "pattern": "\\S",
+                  "maxLength": 80
+                }
+              }
+            },
+            "capabilities": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "description"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  }
+                }
+              }
+            },
+            "settings": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  },
+                  "choices": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "\\S",
+                      "maxLength": 80
+                    }
+                  }
+                }
+              }
+            },
+            "actions": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "label",
+                  "description"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "type": "string",
+                    "pattern": "\\S",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "icon": {
+      "type": "string",
+      "maxLength": 8192,
+      "pattern": "^\\s*<svg[\\s\\S]*</svg>\\s*$",
+      "description": "Schema 8: a self-contained SVG icon (no script, event handlers, external or embedded references). It is shown as an image on a neutral background, so give it its own shape and colours."
     }
   },
   "$defs": {
@@ -832,6 +1154,29 @@
       "if": {
         "required": [
           "introduction"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "const": 8
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {
+            "required": [
+              "icon"
+            ]
+          },
+          {
+            "required": [
+              "translations"
+            ]
+          }
         ]
       },
       "then": {

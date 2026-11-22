@@ -200,6 +200,29 @@ Headlines are at most 80 characters and bodies 320.
 }
 ```
 
+### Icon and translations
+
+Schema 8 also adds an optional `icon`, a self-contained SVG of at most 8 KiB.
+Arrumo shows it as an image wherever the plugin appears, such as beside the
+agent that is working, so it cannot run script; the host refuses icons with
+script, event handlers, `href`, `url(…)`, embedded images or documents. Draw
+the icon with its own background shape and colours.
+
+Plugins translate their own text. English stays in the manifest's fields, and
+`translations.es` and `translations.pt` override the plugin `name` and
+`description`, the agent `provider.label`, and each declared capability,
+setting (`label`, `description`, and `choices` labels keyed by value) and
+action. `translations.en` may add labels the base fields lack, such as choice
+labels. Every key must name something the manifest declares.
+
+```json
+"translations": {
+  "en": {"settings": {"reasoning-effort": {"choices": {"xhigh": "Extra high"}}}},
+  "es": {"description": "Usa tu plan de ChatGPT…",
+         "settings": {"web-search": {"label": "Búsqueda web"}}}
+}
+```
+
 ### Structured agent runs
 
 Schema version 7 lets an agent provider declare `agentProvider.cli.structuredRun`.

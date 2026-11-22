@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo dubbing adapter",
+  "description": "Declares an asynchronous dubbing job. Arrumo uploads the MP3 soundtrack of an asset with the target language, reads the job ID from the JSON answer, polls the status endpoint every few seconds until a done or failed value, then downloads the dub for that language and stores it as a new asset. {id} and {language} fill whole path segments.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pluginId",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "create",
+    "status",
+    "result",
+    "languages",
+    "maxInputSeconds",
+    "maxInputBytes",
+    "maxWaitSeconds"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "pluginId": {
+      "$ref": "#/$defs/id"
+    },
+    "credentialSetting": {
+      "$ref": "#/$defs/id"
+    },
+    "credentialHeader": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "credentialPrefix": {
+      "enum": [
+        "",
+        "Bearer "
+      ]
+    },
+    "create": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint",
+        "fileField",
+        "languageField",
+        "fields",
+        "idField"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[A-Za-z0-9.-]+(/[A-Za-z0-9._~-]+)+$"
+        },
+        "fileField": {
+          "$ref": "#/$defs/key"
+        },
+        "languageField": {
+          "$ref": "#/$defs/key"
+        },
+        "fields": {
+          "type": "object",
+          "maxProperties": 16,
+          "propertyNames": {
+            "$ref": "#/$defs/key"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "idField": {
+          "$ref": "#/$defs/key"
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint",
+        "statusField",
+        "done",
+        "failed"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~-]+|\\{id\\}|\\{language\\}))+$",
+          "description": "Must contain {id}."
+        },
+        "statusField": {
+          "$ref": "#/$defs/key"
+        },
+        "done": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "failed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "errorField": {
+          "$ref": "#/$defs/key"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~-]+|\\{id\\}|\\{language\\}))+$",
+          "description": "Must contain {id} and {language}. Returns MP3, WAV, FLAC, Ogg or MP4."
+        }
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9-]{2,12}$"
+      }
+    },
+    "maxInputSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 7200
+    },
+    "maxInputBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1073741824
+    },
+    "maxWaitSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 7200
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+    }
+  }
+}

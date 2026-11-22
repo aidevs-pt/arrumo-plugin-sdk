@@ -23,6 +23,7 @@ ADAPTERS = {
     "image-generation.json": ("image-generation.schema.json", "image-generation"),
     "video-generation.json": ("video-generation.schema.json", "video-generation"),
     "audio-transform.json": ("audio-transform.schema.json", None),
+    "dubbing.json": ("dubbing.schema.json", "dubbing"),
     # Each kind it declares needs its own capability, checked below.
     "audio-generation.json": ("audio-generation.schema.json", None),
     # Usage belongs to the provider rather than one capability.
@@ -113,6 +114,13 @@ def validate_adapter(name, data, manifest):
                     raise ValueError(f"Image model {model_id} must map 16:9, 9:16 and 1:1")
                 check_single_reference(model.get("references"), f"Image model {model_id}")
         check_single_reference(descriptor.get("references"), "Image adapter")
+    if name == "dubbing.json":
+        if "{id}" not in descriptor["status"]["endpoint"].split("/") or "{language}" in descriptor["status"]["endpoint"]:
+            raise ValueError("The dubbing status endpoint needs {id} and no {language}")
+        if not {"{id}", "{language}"} <= set(descriptor["result"]["endpoint"].split("/")):
+            raise ValueError("The dubbing result endpoint needs {id} and {language}")
+        if credential["scope"] != "workspace":
+            raise ValueError("Dubbing adapter requires a workspace secret")
     if name == "audio-transform.json":
         for transform, capability in (("voice-change", "voice-changer"), ("voice-isolation", "voice-isolation")):
             if transform in descriptor["transforms"] and capability not in manifest["capabilities"]:

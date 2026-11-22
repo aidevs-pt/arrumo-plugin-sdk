@@ -1198,7 +1198,8 @@
               5,
               6,
               7,
-              8
+              8,
+              9
             ]
           }
         }
@@ -1219,7 +1220,8 @@
               5,
               6,
               7,
-              8
+              8,
+              9
             ]
           }
         }
@@ -1258,7 +1260,8 @@
               5,
               6,
               7,
-              8
+              8,
+              9
             ]
           }
         }
@@ -1298,7 +1301,8 @@
               5,
               6,
               7,
-              8
+              8,
+              9
             ]
           }
         }
@@ -1324,7 +1328,8 @@
             "enum": [
               6,
               7,
-              8
+              8,
+              9
             ]
           }
         }
@@ -1370,7 +1375,10 @@
       "then": {
         "properties": {
           "schemaVersion": {
-            "const": 8
+            "enum": [
+              8,
+              9
+            ]
           }
         }
       }
@@ -1398,7 +1406,10 @@
       "then": {
         "properties": {
           "schemaVersion": {
-            "const": 8
+            "enum": [
+              8,
+              9
+            ]
           }
         }
       }
@@ -1413,6 +1424,38 @@
         "required": [
           "icon"
         ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "actions": {
+            "contains": {
+              "anyOf": [
+                {
+                  "required": [
+                    "inputs"
+                  ]
+                },
+                {
+                  "required": [
+                    "placements"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "actions"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "const": 9
+          }
+        }
       }
     }
   ]

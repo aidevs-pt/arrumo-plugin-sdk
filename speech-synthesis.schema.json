@@ -3,38 +3,189 @@
   "title": "Arrumo speech synthesis adapter",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "pluginId", "endpoint", "credentialSetting", "credentialHeader", "credentialPrefix", "textField", "body", "query", "responseFormat", "maxTextCharacters"],
+  "required": [
+    "schemaVersion",
+    "pluginId",
+    "endpoint",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "textField",
+    "body",
+    "query",
+    "responseFormat",
+    "maxTextCharacters"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "pluginId": { "$ref": "#/$defs/id" },
+    "schemaVersion": {
+      "enum": [
+        1,
+        2
+      ],
+      "description": "2 when model and models are used."
+    },
+    "pluginId": {
+      "$ref": "#/$defs/id"
+    },
     "endpoint": {
       "type": "string",
       "maxLength": 2048,
       "pattern": "^https://[A-Za-z0-9.-]+(/[A-Za-z0-9._~-]+)+$"
     },
-    "credentialSetting": { "$ref": "#/$defs/id" },
-    "credentialHeader": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
-    "credentialPrefix": { "enum": ["", "Bearer "] },
-    "textField": { "$ref": "#/$defs/key" },
+    "credentialSetting": {
+      "$ref": "#/$defs/id"
+    },
+    "credentialHeader": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "credentialPrefix": {
+      "enum": [
+        "",
+        "Bearer "
+      ]
+    },
+    "textField": {
+      "$ref": "#/$defs/key"
+    },
     "body": {
       "type": "object",
       "maxProperties": 16,
-      "propertyNames": { "$ref": "#/$defs/key" },
-      "additionalProperties": { "type": "string", "maxLength": 256 }
+      "propertyNames": {
+        "$ref": "#/$defs/key"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
     },
     "query": {
       "type": "object",
       "maxProperties": 16,
-      "propertyNames": { "$ref": "#/$defs/key" },
-      "additionalProperties": { "type": "string", "maxLength": 256 }
+      "propertyNames": {
+        "$ref": "#/$defs/key"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
     },
-    "responseFormat": { "enum": ["mp3", "wav"] },
-    "maxTextCharacters": { "type": "integer", "minimum": 1, "maximum": 10000 },
-    "voiceSetting": { "$ref": "#/$defs/id" },
-    "defaultVoice": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[^/\\\\?#\\s]+$" }
+    "responseFormat": {
+      "enum": [
+        "mp3",
+        "wav"
+      ]
+    },
+    "maxTextCharacters": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "voiceSetting": {
+      "$ref": "#/$defs/id"
+    },
+    "defaultVoice": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[^/\\\\?#\\s]+$"
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default"
+      ],
+      "description": "Schema 2. Which of models to use when the caller names none: the setting's value, else default.",
+      "properties": {
+        "default": {
+          "$ref": "#/$defs/key"
+        },
+        "setting": {
+          "$ref": "#/$defs/id",
+          "description": "A string setting whose choices match the model IDs."
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 32,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$"
+      },
+      "description": "Schema 2. Named models. A model's body fields replace the adapter's and its maxTextCharacters applies.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "bestFor",
+          "body",
+          "maxTextCharacters"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "bestFor": {
+            "$ref": "#/$defs/localized"
+          },
+          "body": {
+            "type": "object",
+            "maxProperties": 16,
+            "propertyNames": {
+              "$ref": "#/$defs/key"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 256
+            }
+          },
+          "maxTextCharacters": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          }
+        }
+      }
+    }
   },
   "$defs": {
-    "id": { "type": "string", "maxLength": 64, "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
-    "key": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$" }
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+    },
+    "localized": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "en"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "pt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    }
   }
 }

@@ -112,6 +112,13 @@ def validate_adapter(name, data, manifest):
                     raise ValueError(f"Image model {model_id} must map 16:9, 9:16 and 1:1")
                 check_single_reference(model.get("references"), f"Image model {model_id}")
         check_single_reference(descriptor.get("references"), "Image adapter")
+    if name == "speech-synthesis.json" and "models" in descriptor:
+        if descriptor["schemaVersion"] < 2 or "model" not in descriptor:
+            raise ValueError("Speech adapter models need schema 2 and a model choice")
+        check_model_choice(manifest, descriptor["model"], descriptor["models"], "Speech")
+        for model_id, model in descriptor["models"].items():
+            if descriptor["textField"] in model["body"]:
+                raise ValueError(f"Speech model {model_id} sets the text field in its body")
     if name == "video-generation.json":
         check_durations(descriptor["durations"], descriptor["schemaVersion"], "Video adapter")
         if not template_uses(descriptor["request"], "{prompt}"):

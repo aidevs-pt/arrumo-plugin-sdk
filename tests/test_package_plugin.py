@@ -362,3 +362,27 @@ class NamedModelTest(unittest.TestCase):
         for descriptor, error in cases:
             with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
                 self.build("image-generation.json", descriptor)
+
+    def test_speech_models_match_their_setting(self):
+        manifest = dict(self.manifest)
+        manifest["capabilities"] = dict(manifest["capabilities"], **{"text-to-speech": {"name": "Speech", "description": "Voice."}})
+        manifest["settings"] = manifest["settings"] + [
+            {"id": "speech-model", "label": "Speech model", "description": "Default speech model.",
+             "kind": "string", "scope": "workspace", "required": False, "choices": ["fast"]}]
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        best = {"en": "Fast voice."}
+        speech = {
+            "schemaVersion": 2, "pluginId": "example-transcription", "endpoint": "https://api.example.com/v1/tts",
+            "credentialSetting": "api-key", "credentialHeader": "xi-api-key", "credentialPrefix": "",
+            "textField": "text", "body": {"model_id": "base"}, "query": {}, "responseFormat": "mp3",
+            "maxTextCharacters": 1000, "model": {"default": "fast", "setting": "speech-model"},
+            "models": {"fast": {"label": "Fast", "bestFor": best, "body": {"model_id": "fast"}, "maxTextCharacters": 500}},
+        }
+        self.build("speech-synthesis.json", speech)
+        for descriptor, error in [
+            (dict(speech, schemaVersion=1), "need schema 2|is not one of|was expected"),
+            (dict(speech, models={"fast": dict(speech["models"]["fast"], body={"text": "x"})}), "text field"),
+            (dict(speech, models=dict(speech["models"], slow=speech["models"]["fast"])), "choices must match"),
+        ]:
+            with self.subTest(error=error), self.assertRaisesRegex(Exception, error):
+                self.build("speech-synthesis.json", descriptor)

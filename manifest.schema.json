@@ -22,7 +22,8 @@
         7,
         8,
         9,
-        10
+        10,
+        11
       ]
     },
     "id": {
@@ -376,6 +377,81 @@
                       "type": "string",
                       "maxLength": 128,
                       "pattern": "^([A-Za-z0-9._-]+|\\{session\\})(/([A-Za-z0-9._-]+|\\{session\\}))*$"
+                    }
+                  }
+                }
+              }
+            },
+            "usageRun": {
+              "description": "Schema 11. Reads the agent's remaining allowance without using it: the CLI starts with args, each input value is written to stdin as one JSON line, and the first printed JSON line whose id equals responseId is read. Arrumo shows the most used window.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "args",
+                "input",
+                "responseId",
+                "windows"
+              ],
+              "properties": {
+                "args": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+                  }
+                },
+                "input": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "responseId": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    }
+                  ]
+                },
+                "windows": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "usedPercent"
+                    ],
+                    "properties": {
+                      "usedPercent": {
+                        "type": "string",
+                        "pattern": "^/",
+                        "maxLength": 128,
+                        "description": "Share of the window used, 0 to 100."
+                      },
+                      "resetsAt": {
+                        "type": "string",
+                        "pattern": "^/",
+                        "maxLength": 128,
+                        "description": "Reset time in Unix seconds."
+                      },
+                      "minutes": {
+                        "type": "string",
+                        "pattern": "^/",
+                        "maxLength": 128,
+                        "description": "Window length in minutes."
+                      }
                     }
                   }
                 }
@@ -1245,7 +1321,9 @@
               6,
               7,
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1267,7 +1345,9 @@
               6,
               7,
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1307,7 +1387,9 @@
               6,
               7,
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1348,7 +1430,9 @@
               6,
               7,
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1375,7 +1459,9 @@
               6,
               7,
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1423,7 +1509,9 @@
           "schemaVersion": {
             "enum": [
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1454,7 +1542,9 @@
           "schemaVersion": {
             "enum": [
               8,
-              9
+              9,
+              10,
+              11
             ]
           }
         }
@@ -1504,7 +1594,46 @@
       "then": {
         "properties": {
           "schemaVersion": {
-            "const": 9
+            "enum": [
+              9,
+              10,
+              11
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "agentProvider": {
+            "properties": {
+              "cli": {
+                "not": {
+                  "required": [
+                    "usageRun"
+                  ]
+                }
+              }
+            }
           }
         }
       }

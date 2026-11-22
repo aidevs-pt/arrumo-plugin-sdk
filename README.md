@@ -419,6 +419,30 @@ and crops the image like any other provider's, and removes what the run left.
 }
 ```
 
+Schema 11 agents can declare a `usageRun` so creators see how much of their
+plan's allowance is left, next to the keyed providers in Settings › Services and
+keys and in the low-allowance warnings. Arrumo starts the CLI with `args`, writes
+each `input` value to stdin as one JSON line, and reads the first printed JSON
+line whose `id` is `responseId`. Each of `windows` points at the share used in
+percent and, optionally, its reset time in Unix seconds and its length in
+minutes; Arrumo shows the most used window. The read must not spend the
+allowance, and it stops after 20 seconds.
+
+```json
+"usageRun": {
+  "args": ["app-server"],
+  "input": [
+    {"id": 1, "method": "initialize", "params": {"clientInfo": {"name": "arrumo", "version": "1"}}},
+    {"method": "initialized"},
+    {"id": 2, "method": "account/rateLimits/read"}
+  ],
+  "responseId": 2,
+  "windows": [{"usedPercent": "/result/rateLimits/primary/usedPercent",
+               "resetsAt": "/result/rateLimits/primary/resetsAt",
+               "minutes": "/result/rateLimits/primary/windowDurationMins"}]
+}
+```
+
 ```json
 "settings": [
   {"id": "web-search", "label": "Web search", "description": "…", "kind": "boolean",

@@ -21,7 +21,8 @@
         6,
         7,
         8,
-        9
+        9,
+        10
       ]
     },
     "id": {
@@ -936,6 +937,12 @@
             "boolean",
             "integer"
           ]
+        },
+        "helpUrl": {
+          "description": "Schema 10: an https page explaining where to get the value, such as the provider's API key page. Arrumo opens it from the installed manifest only.",
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^https://[^\\s#@]+$"
         }
       }
     },

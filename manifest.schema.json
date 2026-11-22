@@ -97,7 +97,7 @@
               }
             },
             "structuredRun": {
-              "description": "Runs the agent once, non-interactively, with the prompt on stdin and a JSON Schema the answer must follow. Placeholders must be whole arguments: {schema} is the schema as JSON, {schemaPath} a file containing it, {outputPath} a file the agent writes its answer to.",
+              "description": "Runs the agent once, non-interactively, with the prompt on stdin and a JSON Schema the answer must follow. Placeholders must be whole arguments: {schema} is the schema as JSON, {schemaPath} a file containing it, {outputPath} a file the agent writes its answer to, and {settings} the arguments chosen by settingArgs.",
               "type": "object",
               "additionalProperties": false,
               "required": [
@@ -113,6 +113,40 @@
                     "type": "string",
                     "minLength": 0,
                     "maxLength": 512
+                  }
+                },
+                "settingArgs": {
+                  "description": "Arguments that follow the plugin's settings, inserted in order at the {settings} placeholder. Boolean settings use args when true and otherwise when false. Other settings use args when they have a value, replacing {value} inside each argument with it; string values must come from the setting's choices.",
+                  "type": "array",
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "setting",
+                      "args"
+                    ],
+                    "properties": {
+                      "setting": {
+                        "$ref": "#/$defs/identifier"
+                      },
+                      "args": {
+                        "type": "array",
+                        "maxItems": 8,
+                        "items": {
+                          "type": "string",
+                          "maxLength": 256
+                        }
+                      },
+                      "otherwise": {
+                        "type": "array",
+                        "maxItems": 8,
+                        "items": {
+                          "type": "string",
+                          "maxLength": 256
+                        }
+                      }
+                    }
                   }
                 },
                 "result": {
@@ -212,6 +246,24 @@
         },
         "required": {
           "type": "boolean"
+        },
+        "choices": {
+          "description": "For string settings: the only values allowed, shown as a choice list.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:-]{1,64}$"
+          }
+        },
+        "default": {
+          "description": "The value used when neither the app nor the workspace sets one. Not allowed for secrets.",
+          "type": [
+            "string",
+            "boolean",
+            "integer"
+          ]
         }
       }
     },

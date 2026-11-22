@@ -208,6 +208,34 @@ time limit, and treats a non-zero exit as a failure. Providers own the flags tha
 keep the run non-interactive and free of tools, hooks and network access the
 stage does not need.
 
+The agent's capabilities belong to its plugin. Declare them as ordinary
+`settings` and map each to flags with `settingArgs`; the host inserts the chosen
+arguments at a `{settings}` placeholder. A boolean setting uses `args` when true
+and `otherwise` when false or unset. Other settings use `args` with `{value}`
+replaced, accepting only plain words (letters, digits, `.`, `_`, `:` and `-`),
+and a string setting with `choices` only accepts one of them. A setting's
+`default` applies when neither the app nor the workspace sets a value. The host
+freezes the resolved values into each generation run so it can be reproduced.
+
+```json
+"settings": [
+  {"id": "web-search", "label": "Web search", "description": "…", "kind": "boolean",
+   "scope": "workspace", "required": false, "default": false},
+  {"id": "reasoning-effort", "label": "Reasoning effort", "description": "…",
+   "kind": "string", "scope": "workspace", "required": false,
+   "choices": ["low", "medium", "high"], "default": "medium"}
+],
+"structuredRun": {
+  "args": ["exec", "{settings}", "--output-schema", "{schemaPath}", "-"],
+  "settingArgs": [
+    {"setting": "web-search", "args": ["-c", "web_search=\"live\""],
+     "otherwise": ["-c", "web_search=\"disabled\""]},
+    {"setting": "reasoning-effort", "args": ["-c", "model_reasoning_effort=\"{value}\""]}
+  ],
+  "result": { "source": "outputFile" }
+}
+```
+
 ### Local subtitle translators
 
 A bundled provider can declare the `subtitle-translation` capability and ship

@@ -217,6 +217,11 @@ and a string setting with `choices` only accepts one of them. A setting's
 `default` applies when neither the app nor the workspace sets a value. The host
 freezes the resolved values into each generation run so it can be reproduced.
 
+`progress` lets the host show what the agent is doing while it works. Each
+entry is a regular expression matched against every line the agent prints;
+its first capture group (or `label`) becomes a step of kind `thinking`,
+`search` or `step`, so creators can follow the reasoning and searches live.
+
 ```json
 "settings": [
   {"id": "web-search", "label": "Web search", "description": "…", "kind": "boolean",

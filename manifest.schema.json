@@ -149,6 +149,37 @@
                     }
                   }
                 },
+                "progress": {
+                  "description": "Patterns that turn lines the agent prints while it works into steps the host can show: what it is thinking about, what it searches for, or other steps. A pattern's first capture group is the step's text; without one, label is used.",
+                  "type": "array",
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "pattern",
+                      "kind"
+                    ],
+                    "properties": {
+                      "pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "kind": {
+                        "enum": [
+                          "thinking",
+                          "search",
+                          "step"
+                        ]
+                      },
+                      "label": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    }
+                  }
+                },
                 "result": {
                   "type": "object",
                   "additionalProperties": false,

@@ -1060,6 +1060,18 @@
         "description",
         "scope"
       ],
+      "if": {
+        "required": [
+          "hooks"
+        ]
+      },
+      "then": {
+        "properties": {
+          "scope": {
+            "const": "workspace"
+          }
+        }
+      },
       "properties": {
         "id": {
           "$ref": "#/$defs/identifier"
@@ -1096,6 +1108,30 @@
               "generation",
               "completed-video"
             ]
+          }
+        },
+        "hooks": {
+          "description": "Schema 9: events that run a workspace action on its own. Each hook runs only while the boolean setting named by enabledBy is on for the workspace. A video-completed hook receives {\"event\": \"video-completed\", \"video\": {...}} instead of form inputs, and runs once per finished video.",
+          "type": "array",
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "event",
+              "enabledBy"
+            ],
+            "properties": {
+              "event": {
+                "enum": [
+                  "video-completed"
+                ]
+              },
+              "enabledBy": {
+                "description": "The id of a boolean setting declared by this plugin.",
+                "$ref": "#/$defs/identifier"
+              }
+            }
           }
         }
       }
@@ -1440,6 +1476,11 @@
                 {
                   "required": [
                     "placements"
+                  ]
+                },
+                {
+                  "required": [
+                    "hooks"
                   ]
                 }
               ]

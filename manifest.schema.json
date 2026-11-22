@@ -1111,9 +1111,10 @@
           }
         },
         "hooks": {
-          "description": "Schema 9: events that run a workspace action on its own. Each hook runs only while the boolean setting named by enabledBy is on for the workspace. A video-completed hook receives {\"event\": \"video-completed\", \"video\": {...}} instead of form inputs, and runs once per finished video.",
+          "description": "Schema 9: events that run a workspace action on its own, at most one hook per event. Each hook runs only while the boolean setting named by enabledBy is on for the workspace. The action receives the event instead of form inputs: video-completed runs once per finished video, generation-failed once per failed attempt.",
           "type": "array",
-          "maxItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
           "items": {
             "type": "object",
             "additionalProperties": false,
@@ -1124,7 +1125,8 @@
             "properties": {
               "event": {
                 "enum": [
-                  "video-completed"
+                  "video-completed",
+                  "generation-failed"
                 ]
               },
               "enabledBy": {

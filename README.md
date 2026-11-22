@@ -115,7 +115,7 @@ Schema 9 gives an action a form and places in the app. `inputs` lists up to 16 f
 
 #### Run an action on its own (hooks)
 
-A schema 9 workspace action can also declare `hooks`, so it runs without anyone opening its form. There are two events, at most one hook each: `video-completed` fires once per finished video, after Arrumo has verified the delivery files, and `generation-failed` fires once per failed generation attempt. Each hook names a boolean setting of the same plugin in `enabledBy`, and runs only while that setting resolves to `true` for the workspace, so nothing happens until the creator turns it on. Arrumo shows the hook beside the action's form.
+A schema 9 workspace action can also declare `hooks`, so it runs without anyone opening its form. There are three events, at most one hook each: `video-completed` fires once per finished video, after Arrumo has verified the delivery files; `generation-failed` fires once per failed generation attempt; and `publish-date-reached` fires once per finished output on the date the creator planned for it in the calendar. Each hook names a boolean setting of the same plugin in `enabledBy`, and runs only while that setting resolves to `true` for the workspace, so nothing happens until the creator turns it on. Arrumo shows the hook beside the action's form.
 
 ```json
 "settings": [{"id": "auto-upload", "label": "Upload finished videos", "description": "…",
@@ -141,6 +141,8 @@ A `generation-failed` hook receives the run, its attempt and the problem Arrumo 
 {"event": "generation-failed",
  "video": {"runId": 3, "title": "Launch", "profile": "Shorts", "attempt": 1, "problem": "The agent stopped before rendering."}}
 ```
+
+A `publish-date-reached` hook receives the `video-completed` shape with `"event": "publish-date-reached"` and only the output whose date arrived. Arrumo checks every few minutes while it is open; a date up to seven days old still counts, so a day the app was closed is not lost. Each output and date runs the hook once, even if the date is moved back to it.
 
 The creator can skip a switched-on hook for one video when they generate it.
 

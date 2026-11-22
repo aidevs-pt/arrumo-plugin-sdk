@@ -209,10 +209,34 @@ the agent that is working, so it cannot run script; the host refuses icons with
 script, event handlers, `href`, `url(…)`, embedded images or documents. Draw
 the icon with its own background shape and colours. `package_plugin.py` adds
 the declared icon to the ZIP, and plugins without an icon get a default one.
-When the icon is a brand mark, use the brand's official mark, follow the
-brand's guidelines, and add `iconNotice` naming the owner (for example
-"OpenAI and the OpenAI logo are trademarks of OpenAI."). Arrumo shows it
-beside the plugin, and `translations` may translate it like other text.
+
+#### Brand marks: check before you ship one
+
+A company's logo may appear as a plugin icon only when that company's published
+brand guidelines allow it inside another app's interface. Do this check before
+the logo goes into the package, not after:
+
+1. Read the company's own brand, press or trademark page. A notice in the
+   manifest does not grant permission.
+2. Use the logo only if the page allows this use without asking (for example a
+   mark offered for app ecosystems or integrations). Use the company's own file,
+   unmodified, and follow its conditions on clear space, colour and size.
+3. If the page asks you to request permission, sits behind a partner login, or
+   cannot be found, draw a generic symbol of what the plugin does instead, such as
+   a terminal prompt for a command-line agent or a picture frame for images.
+4. Record the result in the plugin README under "Icon and trademarks": which page
+   you read, what it allows, and why the icon is a mark or a generic symbol.
+
+When the icon is a mark, add `iconNotice` naming the owner (for example
+"ElevenLabs and its logo are trademarks of ElevenLabs."). Arrumo shows it
+beside the plugin, and `translations` may translate it like other text. Generic
+symbols carry no notice.
+
+The official plugins were checked on 2026-11-22. ElevenLabs' brand page
+recommends its "11" symbol for app ecosystems, so that plugin uses it. OpenAI asks
+for permission first, Google keeps the Gemini guidelines behind a partner login,
+and Anthropic and Higgsfield publish no rule for this use. So the Codex, OpenAI,
+Claude Code, Gemini and Higgsfield plugins use generic symbols.
 
 Plugins translate their own text. English stays in the manifest's fields, and
 `translations.es` and `translations.pt` override the plugin `name` and

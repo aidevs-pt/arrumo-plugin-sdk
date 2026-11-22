@@ -33,3 +33,5 @@ Atribui ao plugin um identificador próprio em manifest.json. Declara as ações
 Limita o plugin às capacidades de que precisa. Uma ação ao nível da aplicação não recebe dados do espaço de trabalho. Para uma ação ao nível do espaço de trabalho, passa o seu identificador e obtém as permissões necessárias para as chamadas ao host. Mantém as credenciais fora do manifesto, do pacote e dos exemplos.
 
 Consulta o [esquema do manifesto](../../manifest.schema.json), a [interface de componentes](../../wit/plugin.wit) e a [referência do SDK](../../README.md) antes de adicionares capacidades do host ou uma interface de utilizador.
+
+Dá ao plugin um `icon.svg`. Usa o logótipo de uma empresa só depois de leres as suas regras de marca e confirmares que permitem mostrá-lo dentro de outra aplicação. Se pedirem para solicitar autorização, não forem públicas ou não existirem, desenha um símbolo genérico do que o plugin faz. Regista no README o que verificaste ([marcas](../../README.md#brand-marks-check-before-you-ship-one)).

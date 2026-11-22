@@ -801,7 +801,7 @@
       "type": "string",
       "pattern": "\\S",
       "maxLength": 200,
-      "description": "Schema 8: required when the icon is a brand mark: who owns it, such as \"OpenAI and the OpenAI logo are trademarks of OpenAI.\" Shown beside the icon."
+      "description": "Schema 8: required when the icon is a brand mark: who owns it, such as \"ElevenLabs and its logo are trademarks of ElevenLabs.\" Shown beside the icon. Use a mark only when the owner's published brand guidelines allow it in another app; see the README section on brand marks."
     }
   },
   "$defs": {

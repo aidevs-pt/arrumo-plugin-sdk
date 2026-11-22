@@ -33,3 +33,5 @@ Give your plugin its own ID in manifest.json. Declare actions and their scope in
 Limit your plugin to the capabilities it needs. An app-scoped action does not receive workspace data. For a workspace action, pass a workspace ID and obtain any permissions required by its host calls. Keep credentials out of the manifest, package and example payloads.
 
 Review the [manifest schema](../../manifest.schema.json), [component interface](../../wit/plugin.wit), and [SDK reference](../../README.md) before adding host capabilities or a frontend surface.
+
+Give the plugin an `icon.svg`. Use a company's logo only after reading its brand guidelines and confirming that they allow the logo inside another app. If they ask for permission, are not public or do not exist, draw a generic symbol of what the plugin does. Record what you checked in the README ([brand marks](../../README.md#brand-marks-check-before-you-ship-one)).

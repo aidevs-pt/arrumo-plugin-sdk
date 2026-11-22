@@ -33,3 +33,5 @@ Asigna a tu plugin un identificador propio en manifest.json. Declara las accione
 Limita el plugin a las capacidades que necesite. Una acción de ámbito de aplicación no recibe datos del espacio de trabajo. Para una acción de ámbito de espacio de trabajo, pasa su identificador y obtén los permisos que requieran las llamadas al host. Mantén las credenciales fuera del manifiesto, del paquete y de los ejemplos.
 
 Consulta el [esquema del manifiesto](../../manifest.schema.json), la [interfaz de componentes](../../wit/plugin.wit) y la [referencia del SDK](../../README.md) antes de añadir capacidades del host o una interfaz de usuario.
+
+Dale al complemento un `icon.svg`. Usa el logotipo de una empresa solo después de leer sus normas de marca y confirmar que permiten mostrarlo dentro de otra aplicación. Si piden solicitar permiso, no son públicas o no existen, dibuja un símbolo genérico de lo que hace el complemento. Anota en el README lo que comprobaste ([marcas](../../README.md#brand-marks-check-before-you-ship-one)).

@@ -146,6 +146,26 @@ class PackagePluginTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_package(self.source, [name])
 
+    def test_usage_events_need_schema_twelve(self):
+        manifest = {
+            "schemaVersion": 12, "id": "example-agent", "name": "Example agent",
+            "description": "An agent provider.",
+            "capabilities": {"agents": {"name": "Agent", "description": "Runs editing stages."}},
+            "agentProvider": {"label": "Example", "setupUrl": "https://example.com/setup",
+                              "cli": {"executable": "example", "authStatusArgs": ["auth", "status"]}},
+        }
+        manifest["agentProvider"]["cli"]["usageEvent"] = {
+            "typePointer": "/type", "typeValue": "rate_limit_event",
+            "windows": [{"used": "/info/seven_day/utilization", "scale": "fraction", "minutes": 10080}],
+        }
+        manifest["schemaVersion"] = 12
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        build_package(self.source, [])
+        manifest["schemaVersion"] = 11
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaises(Exception):
+            build_package(self.source, [])
+
     def test_validates_audio_adapter_kinds_against_capabilities(self):
         manifest = json.loads(self.manifest)
         manifest["settings"][0]["scope"] = "workspace"

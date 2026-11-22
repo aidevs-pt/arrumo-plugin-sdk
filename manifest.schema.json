@@ -23,7 +23,8 @@
         8,
         9,
         10,
-        11
+        11,
+        12
       ]
     },
     "id": {
@@ -450,6 +451,69 @@
                         "type": "string",
                         "pattern": "^/",
                         "maxLength": 128,
+                        "description": "Window length in minutes."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "usageEvent": {
+              "description": "Schema 12. Reads the agent's remaining allowance from an event it prints during ordinary runs, so no extra request is made. Arrumo keeps the latest reading and shows the most used window until it resets.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "typePointer",
+                "typeValue",
+                "windows"
+              ],
+              "properties": {
+                "typePointer": {
+                  "type": "string",
+                  "pattern": "^/",
+                  "maxLength": 128,
+                  "description": "JSON Pointer to the event's type in each printed JSON line."
+                },
+                "typeValue": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "windows": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "used",
+                      "scale"
+                    ],
+                    "properties": {
+                      "used": {
+                        "type": "string",
+                        "pattern": "^/",
+                        "maxLength": 128,
+                        "description": "Share of the window used."
+                      },
+                      "scale": {
+                        "enum": [
+                          "fraction",
+                          "percent"
+                        ],
+                        "description": "Whether used runs 0 to 1 or 0 to 100."
+                      },
+                      "resetsAt": {
+                        "type": "string",
+                        "pattern": "^/",
+                        "maxLength": 128,
+                        "description": "Reset time in Unix seconds."
+                      },
+                      "minutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 525600,
                         "description": "Window length in minutes."
                       }
                     }
@@ -1323,7 +1387,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1347,7 +1412,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1389,7 +1455,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1432,7 +1499,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1461,7 +1529,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1511,7 +1580,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1544,7 +1614,8 @@
               8,
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1597,7 +1668,8 @@
             "enum": [
               9,
               10,
-              11
+              11,
+              12
             ]
           }
         }
@@ -1634,6 +1706,34 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "agentProvider": {
+            "properties": {
+              "cli": {
+                "required": [
+                  "usageEvent"
+                ]
+              }
+            },
+            "required": [
+              "cli"
+            ]
+          }
+        },
+        "required": [
+          "agentProvider"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "minimum": 12
           }
         }
       }

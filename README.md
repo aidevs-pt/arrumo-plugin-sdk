@@ -222,6 +222,11 @@ entry is a regular expression matched against every line the agent prints;
 its first capture group (or `label`) becomes a step of kind `thinking`,
 `search` or `step`, so creators can follow the reasoning and searches live.
 
+Agents that can look at images declare `imageArgs`, such as `["-i", "{imagePath}"]`,
+and place `{images}` in `args`. The host repeats those arguments once per image
+it wants the agent to see, such as thumbnail references or images found while
+researching a creator, and leaves `{images}` empty for agents without it.
+
 ```json
 "settings": [
   {"id": "web-search", "label": "Web search", "description": "…", "kind": "boolean",

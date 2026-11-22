@@ -149,6 +149,16 @@
                     }
                   }
                 },
+                "imageArgs": {
+                  "description": "Arguments that attach one image the agent can look at, repeated for each image at the {images} placeholder; {imagePath} is replaced with the image's file. Omit when the agent cannot take images.",
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 128
+                  }
+                },
                 "progress": {
                   "description": "Patterns that turn lines the agent prints while it works into steps the host can show: what it is thinking about, what it searches for, or other steps. A pattern's first capture group is the step's text; without one, label is used.",
                   "type": "array",

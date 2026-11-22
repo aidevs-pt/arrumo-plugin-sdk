@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo audio transform adapter",
+  "description": "Declares how Arrumo sends one audio file to a provider and gets processed audio back, such as a voice changer or a voice isolator. Arrumo converts the source asset (audio, or a video's soundtrack) to MP3, checks its length and size, posts it as a multipart form with the workspace credential, and stores the returned MP3, WAV, FLAC or Ogg audio as a new workspace asset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pluginId",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "transforms"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "pluginId": {
+      "$ref": "#/$defs/id"
+    },
+    "credentialSetting": {
+      "$ref": "#/$defs/id",
+      "description": "A workspace secret setting declared in the manifest."
+    },
+    "credentialHeader": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "credentialPrefix": {
+      "enum": [
+        "",
+        "Bearer "
+      ]
+    },
+    "voiceSetting": {
+      "$ref": "#/$defs/id",
+      "description": "A string setting with the default voice for transforms that take one."
+    },
+    "transforms": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "description": "voice-change needs the voice-changer capability and voice-isolation the voice-isolation capability.",
+      "properties": {
+        "voice-change": {
+          "$ref": "#/$defs/transform"
+        },
+        "voice-isolation": {
+          "$ref": "#/$defs/transform"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint",
+        "voiceSegment",
+        "fileField",
+        "fields",
+        "query",
+        "maxInputSeconds",
+        "maxInputBytes"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[A-Za-z0-9.-]+(/[A-Za-z0-9._~-]+)+$"
+        },
+        "voiceSegment": {
+          "type": "boolean",
+          "description": "Append the voice ID as the last path segment."
+        },
+        "fileField": {
+          "$ref": "#/$defs/key",
+          "description": "The multipart field that carries the audio file."
+        },
+        "fields": {
+          "type": "object",
+          "maxProperties": 16,
+          "propertyNames": {
+            "$ref": "#/$defs/key"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "description": "Fixed multipart text fields."
+        },
+        "query": {
+          "type": "object",
+          "maxProperties": 16,
+          "propertyNames": {
+            "$ref": "#/$defs/key"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "description": "Fixed query parameters."
+        },
+        "maxInputSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7200
+        },
+        "maxInputBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "minInputSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600,
+          "description": "The shortest sound the provider accepts."
+        }
+      }
+    }
+  }
+}

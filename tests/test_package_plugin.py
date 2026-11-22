@@ -386,3 +386,19 @@ class NamedModelTest(unittest.TestCase):
         ]:
             with self.subTest(error=error), self.assertRaisesRegex(Exception, error):
                 self.build("speech-synthesis.json", descriptor)
+
+    def test_audio_transforms_need_their_capability_and_a_voice(self):
+        manifest = dict(self.manifest)
+        manifest["capabilities"] = dict(manifest["capabilities"], **{"voice-isolation": {"name": "Isolate", "description": "Isolate voice."}})
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        entry = {"endpoint": "https://api.example.com/v1/isolate", "voiceSegment": False, "fileField": "audio",
+                 "fields": {}, "query": {}, "maxInputSeconds": 3600, "maxInputBytes": 1000, "minInputSeconds": 4.6}
+        transform = {"schemaVersion": 1, "pluginId": "example-transcription", "credentialSetting": "api-key",
+                     "credentialHeader": "xi-api-key", "credentialPrefix": "", "transforms": {"voice-isolation": entry}}
+        self.build("audio-transform.json", transform)
+        for descriptor, error in [
+            (dict(transform, transforms={"voice-change": dict(entry, voiceSegment=True)}), "voice-changer capability"),
+            (dict(transform, transforms={"voice-isolation": dict(entry, endpoint="http://x.example/a")}), "does not match"),
+        ]:
+            with self.subTest(error=error), self.assertRaisesRegex(Exception, error):
+                self.build("audio-transform.json", descriptor)

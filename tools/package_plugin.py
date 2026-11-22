@@ -22,6 +22,7 @@ ADAPTERS = {
     "speech-synthesis.json": ("speech-synthesis.schema.json", "text-to-speech"),
     "image-generation.json": ("image-generation.schema.json", "image-generation"),
     "video-generation.json": ("video-generation.schema.json", "video-generation"),
+    "audio-transform.json": ("audio-transform.schema.json", None),
     # Each kind it declares needs its own capability, checked below.
     "audio-generation.json": ("audio-generation.schema.json", None),
     # Usage belongs to the provider rather than one capability.
@@ -112,6 +113,15 @@ def validate_adapter(name, data, manifest):
                     raise ValueError(f"Image model {model_id} must map 16:9, 9:16 and 1:1")
                 check_single_reference(model.get("references"), f"Image model {model_id}")
         check_single_reference(descriptor.get("references"), "Image adapter")
+    if name == "audio-transform.json":
+        for transform, capability in (("voice-change", "voice-changer"), ("voice-isolation", "voice-isolation")):
+            if transform in descriptor["transforms"] and capability not in manifest["capabilities"]:
+                raise ValueError(f"Audio transform {transform} needs the {capability} capability")
+        entry = descriptor["transforms"].get("voice-change")
+        if entry and (not entry["voiceSegment"] or "voiceSetting" not in descriptor):
+            raise ValueError("The voice-change transform needs a voice segment and a voice setting")
+        if credential["scope"] != "workspace":
+            raise ValueError("Audio transform adapter requires a workspace secret")
     if name == "speech-synthesis.json" and "models" in descriptor:
         if descriptor["schemaVersion"] < 2 or "model" not in descriptor:
             raise ValueError("Speech adapter models need schema 2 and a model choice")

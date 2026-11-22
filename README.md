@@ -10,6 +10,10 @@ For custom AI solutions for your company, visit [DEVS AI](https://aidevs.pt).
 
 Build, package, install, and run the isolated echo action. [English](https://github.com/aidevs-pt/arrumo-docs/blob/main/content/docs/en/developer/first-plugin.md) · [Español](https://github.com/aidevs-pt/arrumo-docs/blob/main/content/docs/es/developer/first-plugin.md) · [Português](https://github.com/aidevs-pt/arrumo-docs/blob/main/content/docs/pt/developer/first-plugin.md)
 
+## Document your plugin
+
+Write one guide per task a creator does with the plugin, such as setup or making images, in English, Spanish and Portuguese, with the same pages in each language. Name the app's controls as Arrumo shows them in each language, and say what leaves the creator's computer. Official plugins publish their guides in [Arrumo Docs](https://github.com/aidevs-pt/arrumo-docs) under `content/docs/<lang>/plugins/<plugin-id>/`; other plugins can keep them in their repository as `docs/<lang>/<page>.md` and link them from the README.
+
 ## Draft manifest
 
 [manifest.schema.json](manifest.schema.json) defines plugin identity and capability metadata. See the [transcription example](examples/transcription.json).

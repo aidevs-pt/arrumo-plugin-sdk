@@ -1064,7 +1064,7 @@
           "description": "For string settings: the only values allowed, shown as a choice list.",
           "type": "array",
           "minItems": 1,
-          "maxItems": 32,
+          "maxItems": 64,
           "items": {
             "type": "string",
             "pattern": "^[A-Za-z0-9._:-]{1,64}$"

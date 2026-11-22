@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Arrumo video generation adapter",
-  "description": "Declares how Arrumo asks a provider for one clip: submit a JSON job, poll its status address on the same host, then download the finished clip without credentials and store it as a workspace asset. Schema 2 adds named models whose request variants are chosen by the reference images and videos supplied, and a presigned upload flow for those references.",
+  "description": "Declares how Arrumo asks a provider for one clip: submit a JSON job, poll its status address on the same host, then download the finished clip without credentials and store it as a workspace asset. Schema 2 adds named models whose request variants are chosen by the reference images and videos supplied, and a presigned upload flow for those references. Schema 3 gives each model a label and a localized bestFor line, lets durations list the only lengths a model takes, lets an edit variant drop durations so the clip follows its reference video, and adds {lastImage} for a closing frame.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,9 +24,10 @@
     "schemaVersion": {
       "enum": [
         1,
-        2
+        2,
+        3
       ],
-      "description": "2 when model, models or upload is used."
+      "description": "2 when model, models or upload is used; 3 when a model is an object with label and bestFor, or durations use allowed or are absent."
     },
     "pluginId": {
       "$ref": "#/$defs/id"
@@ -77,31 +78,7 @@
       }
     },
     "durations": {
-      "description": "Clip lengths in seconds. Requests are clamped to min and max.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "min",
-        "max",
-        "default"
-      ],
-      "properties": {
-        "min": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 60
-        },
-        "max": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 60
-        },
-        "default": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 60
-        }
-      }
+      "$ref": "#/$defs/durations"
     },
     "request": {
       "description": "The JSON body. String values that are exactly {prompt}, {aspectRatio} or {duration} are replaced; {duration} becomes a number. {prompt} must appear.",
@@ -197,19 +174,26 @@
     "models": {
       "type": "object",
       "minProperties": 1,
-      "maxProperties": 32,
+      "maxProperties": 64,
       "propertyNames": {
         "pattern": "^[a-z0-9][a-z0-9.-]{0,63}$"
       },
       "additionalProperties": {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 4,
-        "items": {
-          "$ref": "#/$defs/variant"
-        }
+        "oneOf": [
+          {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/$defs/variant"
+            }
+          },
+          {
+            "$ref": "#/$defs/model"
+          }
+        ]
       },
-      "description": "Each model's variants. The top-level endpoint, aspectRatios, durations and request remain for schema 1 hosts."
+      "description": "Each model's variants (schema 2) or a model object with label, bestFor and variants (schema 3). The top-level endpoint, aspectRatios, durations and request remain for schema 1 hosts."
     },
     "upload": {
       "type": "object",
@@ -276,7 +260,6 @@
       "additionalProperties": false,
       "required": [
         "endpoint",
-        "durations",
         "request"
       ],
       "description": "One way to call a model. The host uses the first variant whose images and videos ranges fit the references supplied; an absent range takes none.",
@@ -311,43 +294,114 @@
           }
         },
         "durations": {
-          "description": "Clip lengths in seconds. Requests are clamped to min and max.",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "min",
-            "max",
-            "default"
-          ],
-          "properties": {
-            "min": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 60
-            },
-            "max": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 60
-            },
-            "default": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 60
-            }
-          }
+          "$ref": "#/$defs/durations",
+          "description": "Clip lengths in seconds. Required before schema 3. In schema 3 a variant may leave it out when it takes at least one reference video, whose length the clip then follows; its request must not use {duration}."
         },
         "request": {
-          "description": "JSON body template. Besides {prompt}, {aspectRatio} and {duration}, {image} and {video} take the first uploaded reference's address and {images} and {videos} the list; a field whose placeholder has no value is left out.",
+          "description": "JSON body template. Besides {prompt}, {aspectRatio} and {duration}, {image} and {video} take the first uploaded reference's address, {lastImage} the second image (schema 3, a closing frame) and {images} and {videos} the list; a field whose placeholder has no value is left out.",
           "type": "object"
         },
         "images": {
           "$ref": "#/$defs/range",
-          "description": "Reference images this variant takes, at most 9. The request must use {images}, or {image} when max is 1."
+          "description": "Reference images this variant takes, at most 9. The request must use {images}, or {image} when max is 1, or {image} and {lastImage} when max is 2."
         },
         "videos": {
           "$ref": "#/$defs/range",
           "description": "Reference MP4 videos this variant takes, at most 3. The request must use {videos}, or {video} when max is 1."
+        }
+      }
+    },
+    "durations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max",
+        "default"
+      ],
+      "description": "Clip lengths in seconds. Requests are clamped to min and max, or moved to the nearest of allowed when it is set.",
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "default": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "allowed": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60
+          },
+          "description": "Schema 3. The only lengths the model takes, each between min and max; default must be one of them."
+        }
+      }
+    },
+    "localized": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "en"
+      ],
+      "description": "Text per app language; en is required and used when the creator's language is missing.",
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "pt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "bestFor",
+        "variants"
+      ],
+      "description": "Schema 3. A named model, what it is best for, and its variants.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The model's name as creators know it."
+        },
+        "bestFor": {
+          "$ref": "#/$defs/localized",
+          "description": "One line on when to choose this model, shown to creators and agents."
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/variant"
+          }
         }
       }
     }

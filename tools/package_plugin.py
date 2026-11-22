@@ -100,12 +100,30 @@ def validate_adapter(name, data, manifest):
             raise ValueError("Image adapter model setting must be a declared string setting")
         if not template_uses(descriptor["request"], "{prompt}"):
             raise ValueError("Image adapter request must contain {prompt}")
+        models = descriptor.get("models")
+        if models is not None:
+            if descriptor["schemaVersion"] < 3:
+                raise ValueError("Image adapter models need schema 3")
+            check_model_choice(manifest, descriptor["model"], models, "Image")
+            for model_id, model in models.items():
+                if not template_uses(model["request"], "{prompt}"):
+                    raise ValueError(f"Image model {model_id} request must contain {{prompt}}")
+                if not {"16:9", "9:16", "1:1"} <= set(model["aspectRatios"]):
+                    raise ValueError(f"Image model {model_id} must map 16:9, 9:16 and 1:1")
+                check_single_reference(model.get("references"), f"Image model {model_id}")
+        check_single_reference(descriptor.get("references"), "Image adapter")
     if name == "video-generation.json":
-        durations = descriptor["durations"]
-        if not durations["min"] <= durations["default"] <= durations["max"]:
-            raise ValueError("Video adapter durations must satisfy min <= default <= max")
+        check_durations(descriptor["durations"], descriptor["schemaVersion"], "Video adapter")
         if not template_uses(descriptor["request"], "{prompt}"):
             raise ValueError("Video adapter request must contain {prompt}")
+        models = descriptor.get("models")
+        if models is not None:
+            check_model_choice(manifest, descriptor.get("model", {}), models, "Video")
+            for model_id, model in models.items():
+                if isinstance(model, dict) and descriptor["schemaVersion"] < 3:
+                    raise ValueError(f"Video model {model_id} needs schema 3 for label and bestFor")
+                for variant in model["variants"] if isinstance(model, dict) else model:
+                    check_video_variant(variant, descriptor["schemaVersion"], f"Video model {model_id}")
     if name == "audio-generation.json":
         for kind, entry in descriptor["kinds"].items():
             if f"{kind}-generation" not in manifest["capabilities"]:
@@ -118,6 +136,42 @@ def validate_adapter(name, data, manifest):
             raise ValueError("Audio adapter requires a workspace secret")
     if name == "transcription-timed.json" and "words" not in descriptor["response"]:
         raise ValueError("Timed transcription adapter requires a timing mapping")
+
+
+def check_model_choice(manifest, choice, models, kind):
+    if choice.get("default") not in models:
+        raise ValueError(f"{kind} adapter default model must be one of its models")
+    setting_id = choice.get("setting")
+    setting = next((item for item in manifest.get("settings", []) if item["id"] == setting_id), None)
+    if setting_id is not None and (setting is None or set(setting.get("choices", [])) != set(models)):
+        raise ValueError(f"{kind} adapter model setting choices must match its models")
+
+
+def check_single_reference(references, owner):
+    if references and references.get("single") and references["maxImages"] != 1:
+        raise ValueError(f"{owner} sends a single reference, so maxImages must be 1")
+
+
+def check_durations(durations, schema_version, owner):
+    if not durations["min"] <= durations["default"] <= durations["max"]:
+        raise ValueError(f"{owner} durations must satisfy min <= default <= max")
+    allowed = durations.get("allowed")
+    if allowed is not None:
+        if schema_version < 3:
+            raise ValueError(f"{owner} durations allowed needs schema 3")
+        if durations["default"] not in allowed or not all(durations["min"] <= value <= durations["max"] for value in allowed):
+            raise ValueError(f"{owner} durations allowed must lie within min and max and include default")
+
+
+def check_video_variant(variant, schema_version, owner):
+    if not template_uses(variant["request"], "{prompt}"):
+        raise ValueError(f"{owner} request must contain {{prompt}}")
+    if "durations" in variant:
+        check_durations(variant["durations"], schema_version, owner)
+    elif schema_version < 3 or variant.get("videos", {}).get("min", 0) < 1 or template_uses(variant["request"], "{duration}"):
+        raise ValueError(f"{owner} variants without durations need schema 3, a reference video and no {{duration}}")
+    if template_uses(variant["request"], "{lastImage}") and (schema_version < 3 or variant.get("images", {}).get("max") != 2):
+        raise ValueError(f"{owner} uses {{lastImage}}, which needs schema 3 and at most two images")
 
 
 def build_package(root, extra_files):

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Arrumo image generation adapter",
-  "description": "Declares how Arrumo asks a provider for one image. The host fills placeholders, sends the request with the workspace credential and saves the decoded image as a workspace asset.",
+  "description": "Declares how Arrumo asks a provider for one image. The host fills placeholders, sends the request with the workspace credential and saves the decoded image as a workspace asset. Schema 3 adds named models, each with a label, a localized bestFor line and its own endpoint, ratios, request and references.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,9 +20,10 @@
     "schemaVersion": {
       "enum": [
         1,
-        2
+        2,
+        3
       ],
-      "description": "2 when job, upload or urls references are used."
+      "description": "2 when job, upload or urls references are used; 3 when models is used."
     },
     "pluginId": {
       "$ref": "#/$defs/id"
@@ -109,94 +110,7 @@
       "maximum": 20971520
     },
     "references": {
-      "description": "Optional. How the provider receives the creator's reference images. With multipart, the filled request's top-level fields become form fields posted to endpoint (same host as the main endpoint) and each image is a file part named fileField. With json, item (using {mimeType} and {imageBase64}) is appended per image to the array at pointer in the request. The host falls back to a plain request if one with references fails. With urls (schema 2), images are uploaded and their addresses sent as a list.",
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "encoding",
-            "endpoint",
-            "fileField",
-            "maxImages"
-          ],
-          "properties": {
-            "encoding": {
-              "const": "multipart"
-            },
-            "endpoint": {
-              "type": "string",
-              "maxLength": 2048,
-              "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
-            },
-            "fileField": {
-              "type": "string",
-              "pattern": "^[A-Za-z0-9_\\[\\]-]{1,64}$"
-            },
-            "maxImages": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 8
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "encoding",
-            "pointer",
-            "item",
-            "maxImages"
-          ],
-          "properties": {
-            "encoding": {
-              "const": "json"
-            },
-            "pointer": {
-              "$ref": "#/$defs/pointer"
-            },
-            "item": {
-              "type": "object"
-            },
-            "maxImages": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 8
-            }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "encoding",
-            "endpoint",
-            "field",
-            "maxImages"
-          ],
-          "description": "Schema 2. Each image is uploaded through upload and the list of public addresses is set as field of the JSON request, posted to endpoint on the same host.",
-          "properties": {
-            "encoding": {
-              "const": "urls"
-            },
-            "endpoint": {
-              "type": "string",
-              "maxLength": 2048,
-              "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
-            },
-            "field": {
-              "type": "string",
-              "pattern": "^[A-Za-z0-9_]{1,64}$"
-            },
-            "maxImages": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 8
-            }
-          }
-        }
-      ]
+      "$ref": "#/$defs/references"
     },
     "job": {
       "type": "object",
@@ -305,6 +219,69 @@
           "$ref": "#/$defs/pointer"
         }
       }
+    },
+    "models": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9.-]{0,63}$"
+      },
+      "description": "Schema 3. Named models. model.default and every choice of model.setting must be keys here. A model's endpoint, aspectRatios, request and references replace the top-level ones; a model without references takes none.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "bestFor",
+          "endpoint",
+          "aspectRatios",
+          "request"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "The model's name as creators know it."
+          },
+          "bestFor": {
+            "$ref": "#/$defs/localized",
+            "description": "One line on when to choose this model, shown to creators and agents."
+          },
+          "endpoint": {
+            "description": "HTTPS endpoint. A path segment may contain {model}, which is replaced by the selected model.",
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
+          },
+          "aspectRatios": {
+            "description": "Provider values for each aspect ratio Arrumo asks for, substituted for {aspectRatio}.",
+            "type": "object",
+            "required": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "maxProperties": 16,
+            "propertyNames": {
+              "pattern": "^[1-9][0-9]?:[1-9][0-9]?$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            }
+          },
+          "request": {
+            "description": "JSON body. String values that are exactly {prompt}, {aspectRatio} or {model} are replaced; {prompt} must appear.",
+            "type": "object"
+          },
+          "references": {
+            "$ref": "#/$defs/references"
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -322,6 +299,125 @@
       "type": "string",
       "maxLength": 256,
       "pattern": "^(/[^/]*)+$"
+    },
+    "localized": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "en"
+      ],
+      "description": "Text per app language; en is required and used when the creator's language is missing.",
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "pt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    },
+    "references": {
+      "description": "Optional. How the provider receives the creator's reference images. With multipart, the filled request's top-level fields become form fields posted to endpoint (same host as the main endpoint) and each image is a file part named fileField. With json, item (using {mimeType} and {imageBase64}) is appended per image to the array at pointer in the request. The host falls back to a plain request if one with references fails. With urls (schema 2), images are uploaded and their addresses sent as a list.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "encoding",
+            "endpoint",
+            "fileField",
+            "maxImages"
+          ],
+          "properties": {
+            "encoding": {
+              "const": "multipart"
+            },
+            "endpoint": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
+            },
+            "fileField": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_\\[\\]-]{1,64}$"
+            },
+            "maxImages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "encoding",
+            "pointer",
+            "item",
+            "maxImages"
+          ],
+          "properties": {
+            "encoding": {
+              "const": "json"
+            },
+            "pointer": {
+              "$ref": "#/$defs/pointer"
+            },
+            "item": {
+              "type": "object"
+            },
+            "maxImages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "encoding",
+            "endpoint",
+            "field",
+            "maxImages"
+          ],
+          "description": "Schema 2. Each image is uploaded through upload and the list of public addresses is set as field of the JSON request, posted to endpoint on the same host.",
+          "properties": {
+            "encoding": {
+              "const": "urls"
+            },
+            "endpoint": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "maxImages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            },
+            "single": {
+              "type": "boolean",
+              "description": "Schema 3. Send the first address as a string instead of a list; maxImages must be 1."
+            }
+          }
+        }
+      ]
     }
   }
 }

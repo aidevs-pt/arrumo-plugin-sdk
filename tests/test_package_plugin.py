@@ -254,3 +254,111 @@ class PackagePluginTest(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(Exception):
                 write(changed)
                 build_package(self.source, [name])
+
+
+class NamedModelTest(unittest.TestCase):
+    def setUp(self):
+        directory = self.enterContext(tempfile.TemporaryDirectory())
+        self.source = Path(directory)
+        manifest = json.loads(Path("examples/transcription.json").read_text(encoding="utf-8"))
+        manifest["capabilities"]["video-generation"] = {"name": "Video", "description": "Clips."}
+        manifest["capabilities"]["image-generation"] = {"name": "Images", "description": "Images."}
+        for setting in manifest["settings"]:
+            if setting["kind"] == "secret":
+                setting["scope"] = "workspace"
+        manifest["settings"] += [
+            {"id": "video-model", "label": "Video model", "description": "Default video model.",
+             "kind": "string", "scope": "workspace", "required": False, "choices": ["quick", "edit"]},
+            {"id": "image-model", "label": "Image model", "description": "Default image model.",
+             "kind": "string", "scope": "workspace", "required": False, "choices": ["poster"]},
+        ]
+        self.manifest = manifest
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        best = {"en": "Short drafts.", "es": "Borradores.", "pt": "Rascunhos."}
+        api = "https://api.example.com"
+        self.video = {
+            "schemaVersion": 3, "pluginId": "example-transcription", "endpoint": f"{api}/t2v",
+            "credentialSetting": "api-key", "credentialHeader": "authorization", "credentialPrefix": "Key ",
+            "aspectRatios": {"16:9": "16:9"}, "durations": {"min": 5, "max": 10, "default": 5},
+            "request": {"prompt": "{prompt}", "duration": "{duration}"},
+            "submission": {"statusUrl": "/status_url"},
+            "status": {"state": "/status", "completed": ["completed"], "failed": ["failed"], "video": "/video/url"},
+            "pollSeconds": 5, "timeoutSeconds": 600, "maxVideoBytes": 1000000,
+            "model": {"default": "quick", "setting": "video-model"},
+            "models": {
+                "quick": {"label": "Quick", "bestFor": best, "variants": [
+                    {"endpoint": f"{api}/t2v", "aspectRatios": {"16:9": "16:9"},
+                     "durations": {"min": 5, "max": 10, "default": 5, "allowed": [5, 10]},
+                     "request": {"prompt": "{prompt}", "duration": "{duration}"}},
+                    {"endpoint": f"{api}/i2v", "durations": {"min": 5, "max": 10, "default": 5},
+                     "request": {"prompt": "{prompt}", "image_url": "{image}", "end_image_url": "{lastImage}"},
+                     "images": {"min": 1, "max": 2}},
+                ]},
+                "edit": {"label": "Edit", "bestFor": best, "variants": [
+                    {"endpoint": f"{api}/edit", "request": {"prompt": "{prompt}", "video_url": "{video}"},
+                     "videos": {"min": 1, "max": 1}},
+                ]},
+            },
+            "upload": {"endpoint": f"{api}/upload", "request": {"content_type": "{contentType}"},
+                       "uploadUrl": "/upload_url", "publicUrl": "/public_url"},
+        }
+        self.image = {
+            "schemaVersion": 3, "pluginId": "example-transcription", "endpoint": f"{api}/image",
+            "credentialSetting": "api-key", "credentialHeader": "authorization", "credentialPrefix": "Key ",
+            "model": {"default": "poster", "setting": "image-model"},
+            "aspectRatios": {"16:9": "16:9", "9:16": "9:16", "1:1": "1:1"},
+            "request": {"prompt": "{prompt}"}, "maxImageBytes": 1000000,
+            "job": {"submission": {"statusUrl": "/status_url"},
+                    "status": {"state": "/status", "completed": ["completed"], "failed": [], "image": "/images/0/url"},
+                    "pollSeconds": 3, "timeoutSeconds": 600},
+            "upload": {"endpoint": f"{api}/upload", "request": {"content_type": "{contentType}"},
+                       "uploadUrl": "/upload_url", "publicUrl": "/public_url"},
+            "models": {"poster": {
+                "label": "Poster", "bestFor": best, "endpoint": f"{api}/poster",
+                "aspectRatios": {"16:9": "16:9", "9:16": "9:16", "1:1": "1:1", "4:5": "4:5"},
+                "request": {"prompt": "{prompt}", "aspect_ratio": "{aspectRatio}"},
+                "references": {"encoding": "urls", "endpoint": f"{api}/poster", "field": "image_url",
+                               "maxImages": 1, "single": True},
+            }},
+        }
+
+    def build(self, name, descriptor):
+        (self.source / name).write_text(json.dumps(descriptor), encoding="utf-8")
+        return build_package(self.source, [name])
+
+    def test_accepts_described_models(self):
+        self.build("video-generation.json", self.video)
+        self.build("image-generation.json", self.image)
+
+    def test_rejects_inconsistent_video_models(self):
+        quick = self.video["models"]["quick"]
+        cases = [
+            (dict(self.video, schemaVersion=2), "needs schema 3"),
+            (dict(self.video, model={"default": "slow", "setting": "video-model"}), "default model"),
+            (dict(self.video, models={"quick": quick}), "choices must match"),
+            (dict(self.video, models=dict(self.video["models"], edit=dict(
+                self.video["models"]["edit"], variants=[dict(self.video["models"]["edit"]["variants"][0],
+                                                             request={"prompt": "{prompt}", "video_url": "{video}",
+                                                                      "duration": "{duration}"})]))),
+             "without durations"),
+            (dict(self.video, models=dict(self.video["models"], quick=dict(quick, variants=[dict(
+                quick["variants"][0], durations={"min": 5, "max": 10, "default": 5, "allowed": [6]})]))),
+             "allowed must"),
+        ]
+        for descriptor, error in cases:
+            with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
+                self.build("video-generation.json", descriptor)
+
+    def test_rejects_inconsistent_image_models(self):
+        poster = self.image["models"]["poster"]
+        references = dict(poster["references"], maxImages=2)
+        cases = [
+            (dict(self.image, schemaVersion=2), "need schema 3"),
+            (dict(self.image, models={"poster": dict(poster, references=references)}), "maxImages must be 1"),
+            (dict(self.image, models={"poster": dict(poster, aspectRatios={"16:9": "16:9", "9:16": "9:16",
+                                                                           "1:1": "1:1"}),
+                                      "other": poster}), "choices must match"),
+        ]
+        for descriptor, error in cases:
+            with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
+                self.build("image-generation.json", descriptor)

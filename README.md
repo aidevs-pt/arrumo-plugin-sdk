@@ -202,11 +202,17 @@ Headlines are at most 80 characters and bodies 320.
 
 ### Icon and translations
 
-Schema 8 also adds an optional `icon`, a self-contained SVG of at most 8 KiB.
-Arrumo shows it as an image wherever the plugin appears, such as beside the
-agent that is working, so it cannot run script; the host refuses icons with
+Schema 8 also adds an optional `icon`: the path of an SVG file in the
+package, such as `"icon": "icon.svg"`. Keep the SVG self-contained and at most
+8 KiB. Arrumo shows it as an image wherever the plugin appears, such as beside
+the agent that is working, so it cannot run script; the host refuses icons with
 script, event handlers, `href`, `url(…)`, embedded images or documents. Draw
-the icon with its own background shape and colours.
+the icon with its own background shape and colours. `package_plugin.py` adds
+the declared icon to the ZIP, and plugins without an icon get a default one.
+When the icon is a brand mark, use the brand's official mark, follow the
+brand's guidelines, and add `iconNotice` naming the owner (for example
+"OpenAI and the OpenAI logo are trademarks of OpenAI."). Arrumo shows it
+beside the plugin, and `translations` may translate it like other text.
 
 Plugins translate their own text. English stays in the manifest's fields, and
 `translations.es` and `translations.pt` override the plugin `name` and

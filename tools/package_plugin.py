@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator, ValidationError
 MAX_PACKAGE = 16 * 1024 * 1024
 MAX_MANIFEST = 64 * 1024
 MAX_ENTRIES = 512
+MAX_ICON = 8 * 1024
 SCHEMA_DIR = Path(__file__).resolve().parent.parent
 SCHEMA = SCHEMA_DIR / "manifest.schema.json"
 ADAPTERS = {
@@ -99,13 +100,14 @@ def validate_adapter(name, data, manifest):
 
 
 def build_package(root, extra_files):
-    names = ["manifest.json", *extra_files]
-    validate_package_paths(names)
-
     manifest_bytes = read_file(root, "manifest.json", MAX_MANIFEST)
     manifest = json.loads(manifest_bytes.decode("utf-8"), object_pairs_hook=unique_fields)
     schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(manifest)
+    # The declared icon always travels with the package.
+    icon = manifest.get("icon")
+    names = ["manifest.json", *extra_files, *([icon] if icon and icon not in extra_files else [])]
+    validate_package_paths(names)
     setting_ids = [setting["id"] for setting in manifest.get("settings", [])]
     if len(setting_ids) != len(set(setting_ids)):
         raise ValueError("Duplicate plugin setting ID")
@@ -131,6 +133,8 @@ def build_package(root, extra_files):
                 data = manifest_bytes
             else:
                 limit = min(remaining, MAX_MANIFEST) if name in ADAPTERS else remaining
+                if name == icon:
+                    limit = min(limit, MAX_ICON)
                 data = read_file(root, name, limit)
                 remaining -= len(data)
                 if name in ADAPTERS:

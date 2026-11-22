@@ -534,6 +534,11 @@
                   }
                 }
               }
+            },
+            "iconNotice": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 200
             }
           }
         },
@@ -637,6 +642,11 @@
                   }
                 }
               }
+            },
+            "iconNotice": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 200
             }
           }
         },
@@ -740,6 +750,11 @@
                   }
                 }
               }
+            },
+            "iconNotice": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 200
             }
           }
         }
@@ -747,9 +762,15 @@
     },
     "icon": {
       "type": "string",
-      "maxLength": 8192,
-      "pattern": "^\\s*<svg[\\s\\S]*</svg>\\s*$",
-      "description": "Schema 8: a self-contained SVG icon (no script, event handlers, external or embedded references). It is shown as an image on a neutral background, so give it its own shape and colours."
+      "maxLength": 128,
+      "pattern": "^(?:[a-z0-9][a-z0-9._-]*/)*[a-z0-9][a-z0-9._-]*\\.svg$",
+      "description": "Schema 8: path inside the package to a self-contained SVG icon of at most 8 KiB (no script, event handlers, external or embedded references). The packager adds it to the ZIP. Draw it with its own background shape and colours; plugins without one get a default icon."
+    },
+    "iconNotice": {
+      "type": "string",
+      "pattern": "\\S",
+      "maxLength": 200,
+      "description": "Schema 8: required when the icon is a brand mark: who owns it, such as \"OpenAI and the OpenAI logo are trademarks of OpenAI.\" Shown beside the icon."
     }
   },
   "$defs": {
@@ -1176,6 +1197,11 @@
             "required": [
               "translations"
             ]
+          },
+          {
+            "required": [
+              "iconNotice"
+            ]
           }
         ]
       },
@@ -1185,6 +1211,18 @@
             "const": 8
           }
         }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "iconNotice"
+        ]
+      },
+      "then": {
+        "required": [
+          "icon"
+        ]
       }
     }
   ]

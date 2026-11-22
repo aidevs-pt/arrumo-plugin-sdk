@@ -55,6 +55,26 @@ class PackagePluginTest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             build_package(self.source, [])
 
+    def test_packages_the_declared_icon_file(self):
+        manifest = json.loads(self.manifest)
+        manifest["schemaVersion"] = 8
+        manifest["icon"] = "icon.svg"
+        manifest["iconNotice"] = "Example and its logo are trademarks of Example."
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Expected a regular file: icon.svg"):
+            build_package(self.source, [])
+        (self.source / "icon.svg").write_text("<svg></svg>", encoding="utf-8")
+        package, _ = build_package(self.source, [])
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertEqual(archive.namelist(), ["icon.svg", "manifest.json"])
+        (self.source / "icon.svg").write_text("<svg>" + " " * 9000 + "</svg>", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "size limit: icon.svg"):
+            build_package(self.source, [])
+        manifest["icon"] = "<svg></svg>"
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaises(Exception):
+            build_package(self.source, [])
+
     def test_requires_nonempty_backend_and_frontend_entrypoints(self):
         import json
 

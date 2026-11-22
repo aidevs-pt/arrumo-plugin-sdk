@@ -265,6 +265,25 @@ and crops the image like any other provider's, and removes what the run left.
 }
 ```
 
+#### Follow-up messages
+
+When an agent asks the host for workspace material, Arrumo answers in the same
+session if the plugin declares `resume`, sending only the new material instead
+of the whole brief again. Put `{ephemeral}` in `args` where the flags that stop
+the agent keeping a session belong, and list them in `ephemeralArgs`; the host
+leaves them out only for a run it will follow up. `resume.args` replaces `args`
+for the follow-up, with `{session}` for the ID read from `resume.session`. If a
+follow-up fails, the host starts a fresh run with everything included.
+
+```json
+"args": ["exec", "{ephemeral}", "--output-schema", "{schemaPath}", "-"],
+"ephemeralArgs": ["--ephemeral"],
+"resume": {
+  "args": ["exec", "resume", "--output-schema", "{schemaPath}", "{session}", "-"],
+  "session": {"stream": "stderr", "pattern": "^session id: ([0-9A-Za-z-]+)$"}
+}
+```
+
 ### Local subtitle translators
 
 A bundled provider can declare the `subtitle-translation` capability and ship

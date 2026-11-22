@@ -224,6 +224,73 @@
                       "description": "JSON Pointer to a boolean that is true when the agent reports failure."
                     }
                   }
+                },
+                "ephemeralArgs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "description": "Arguments inserted at {ephemeral} when no follow-up is expected, so the agent keeps no session."
+                },
+                "resume": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "args",
+                    "session"
+                  ],
+                  "description": "How to send a follow-up message to the session of an earlier run.",
+                  "properties": {
+                    "args": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 40,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 512
+                      },
+                      "description": "Arguments for the follow-up run; must contain {session} and {schema} or {schemaPath} (and {outputPath} for outputFile results)."
+                    },
+                    "session": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "stream"
+                      ],
+                      "description": "Where the agent prints its session ID: a pattern whose first group is the ID, or a JSON Pointer into one-event-per-line output.",
+                      "properties": {
+                        "stream": {
+                          "enum": [
+                            "stdout",
+                            "stderr"
+                          ]
+                        },
+                        "pattern": {
+                          "type": "string",
+                          "maxLength": 256
+                        },
+                        "pointer": {
+                          "type": "string",
+                          "pattern": "^(/[^/]*)+$"
+                        }
+                      },
+                      "oneOf": [
+                        {
+                          "required": [
+                            "pattern"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "pointer"
+                          ]
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             },

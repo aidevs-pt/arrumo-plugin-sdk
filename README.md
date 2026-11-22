@@ -319,14 +319,24 @@ of the whole brief again. Put `{ephemeral}` in `args` where the flags that stop
 the agent keeping a session belong, and list them in `ephemeralArgs`; the host
 leaves them out only for a run it will follow up. `resume.args` replaces `args`
 for the follow-up, with `{session}` for the ID read from `resume.session`. If a
-follow-up fails, the host starts a fresh run with everything included.
+session cannot be continued (it is gone, unreadable or stuck), the host starts
+a new one with the whole brief and all material so far.
+
+Declare `resume.cleanup` so kept sessions do not pile up in the agent's own
+history: Arrumo records each session it keeps and deletes its files once the
+video it belongs to has completed, failed or been cancelled, or right after a
+request that has no video. It looks under `directory` in the folder the
+`homeEnv` variable names (absolute paths only), or else `home` in the user's
+home folder, for files whose names end with `fileSuffix`. It never follows
+links and removes folders the deletion leaves empty.
 
 ```json
 "args": ["exec", "{ephemeral}", "--output-schema", "{schemaPath}", "-"],
 "ephemeralArgs": ["--ephemeral"],
 "resume": {
   "args": ["exec", "resume", "--output-schema", "{schemaPath}", "{session}", "-"],
-  "session": {"stream": "stderr", "pattern": "^session id: ([0-9A-Za-z-]+)$"}
+  "session": {"stream": "stderr", "pattern": "^session id: ([0-9A-Za-z-]+)$"},
+  "cleanup": {"homeEnv": "CODEX_HOME", "home": ".codex", "directory": "sessions", "fileSuffix": "{session}.jsonl"}
 }
 ```
 

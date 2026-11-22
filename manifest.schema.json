@@ -290,6 +290,37 @@
                           ]
                         }
                       ]
+                    },
+                    "cleanup": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "home",
+                        "directory",
+                        "fileSuffix"
+                      ],
+                      "description": "Where the agent keeps session files, so Arrumo can delete the sessions it kept once their video is done (or right after a request without a video). Files under directory, in the folder homeEnv names (absolute paths only) or else home inside the user's home folder, whose names end with fileSuffix; links are not followed.",
+                      "properties": {
+                        "homeEnv": {
+                          "type": "string",
+                          "pattern": "^[A-Z0-9_]{1,64}$"
+                        },
+                        "home": {
+                          "type": "string",
+                          "maxLength": 64,
+                          "pattern": "^(?!.*(^|/)\\.\\.?(/|$))[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
+                        },
+                        "directory": {
+                          "type": "string",
+                          "maxLength": 64,
+                          "pattern": "^(?!.*(^|/)\\.\\.?(/|$))[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
+                        },
+                        "fileSuffix": {
+                          "type": "string",
+                          "maxLength": 32,
+                          "pattern": "^\\{session\\}[A-Za-z0-9.]*$"
+                        }
+                      }
                     }
                   }
                 }

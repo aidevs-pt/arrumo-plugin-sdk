@@ -226,6 +226,59 @@
                   }
                 }
               }
+            },
+            "imageRun": {
+              "description": "Makes one image with the agent's own image tool, for agents that declare the image-generation capability. The prompt goes to stdin and the agent stays read-only: it prints one JSON event per line, one of which names its session, and leaves the image in a folder named after that session. Arrumo collects the newest PNG, JPEG or WebP file there, verifies it and removes what the run left. {images} attaches style references with structuredRun.imageArgs.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "args",
+                "sessionPointer",
+                "outputDirectory"
+              ],
+              "properties": {
+                "args": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 40,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 512
+                  }
+                },
+                "sessionPointer": {
+                  "description": "JSON Pointer to the session ID in one of the printed events, such as /thread_id.",
+                  "type": "string",
+                  "maxLength": 128,
+                  "pattern": "^(/[^/]+)+$"
+                },
+                "outputDirectory": {
+                  "description": "Where the agent leaves images: path under the directory named by the environment variable env, or under fallback inside the home directory when env is unset.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "env",
+                    "fallback",
+                    "path"
+                  ],
+                  "properties": {
+                    "env": {
+                      "type": "string",
+                      "pattern": "^[A-Z0-9_]{1,64}$"
+                    },
+                    "fallback": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
+                    },
+                    "path": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "pattern": "^([A-Za-z0-9._-]+|\\{session\\})(/([A-Za-z0-9._-]+|\\{session\\}))*$"
+                    }
+                  }
+                }
+              }
             }
           }
         }

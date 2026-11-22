@@ -229,6 +229,23 @@ and place `{images}` in `args`. The host repeats those arguments once per image
 it wants the agent to see, such as thumbnail references or images found while
 researching a creator, and leaves `{images}` empty for agents without it.
 
+Agents with their own image tool also declare the `image-generation` capability
+and an `imageRun`. Arrumo sends the image brief on stdin, reads the session ID
+from the printed JSON events at `sessionPointer`, and collects the newest PNG,
+JPEG or WebP file from `outputDirectory`: `path` (with `{session}`) under the
+directory in the environment variable `env`, or under `fallback` in the home
+directory. The agent stays read-only and writes nothing itself. Arrumo verifies
+and crops the image like any other provider's, and removes what the run left.
+`{images}` attaches style references using `structuredRun.imageArgs`.
+
+```json
+"imageRun": {
+  "args": ["exec", "--sandbox", "read-only", "--enable", "image_generation", "{images}", "--json", "-"],
+  "sessionPointer": "/thread_id",
+  "outputDirectory": {"env": "CODEX_HOME", "fallback": ".codex", "path": "generated_images/{session}"}
+}
+```
+
 ```json
 "settings": [
   {"id": "web-search", "label": "Web search", "description": "…", "kind": "boolean",

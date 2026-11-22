@@ -266,10 +266,19 @@ beside the plugin, and `translations` may translate it like other text. Generic
 symbols carry no notice.
 
 The official plugins were checked on 2026-11-22. ElevenLabs' brand page
-recommends its "11" symbol for app ecosystems, so that plugin uses it. OpenAI asks
-for permission first, Google keeps the Gemini guidelines behind a partner login,
-and Anthropic and Higgsfield publish no rule for this use. So the Codex, OpenAI,
-Claude Code, Gemini and Higgsfield plugins use generic symbols.
+recommends its "11" symbol for app ecosystems. OpenAI asks for permission first,
+Google keeps the Gemini guidelines behind a partner login, and Anthropic and
+Higgsfield publish no rule for this use. The publisher of the official plugins
+chose to show each provider's logo with an `iconNotice` anyway, so creators
+recognise the service, and will replace a logo with a generic symbol if its owner
+asks. Third-party plugins should still follow the steps above.
+
+#### Icon shape
+
+Draw the icon as a full square tile (for example a 32×32 `viewBox` whose first
+shape is a `<rect width="32" height="32">` in the background colour) with
+square corners and no border. Arrumo rounds the corners and draws a faint edge
+the same way for every plugin, at every size.
 
 Plugins translate their own text. English stays in the manifest's fields, and
 `translations.es` and `translations.pt` override the plugin `name` and

@@ -865,7 +865,7 @@
       "type": "string",
       "maxLength": 128,
       "pattern": "^(?:[a-z0-9][a-z0-9._-]*/)*[a-z0-9][a-z0-9._-]*\\.svg$",
-      "description": "Schema 8: path inside the package to a self-contained SVG icon of at most 8 KiB (no script, event handlers, external or embedded references). The packager adds it to the ZIP. Draw it with its own background shape and colours; plugins without one get a default icon."
+      "description": "Schema 8: path inside the package to a self-contained SVG icon of at most 8 KiB (no script, event handlers, external or embedded references). The packager adds it to the ZIP. Draw it as a full square tile with its own background colour, without rounded corners or a border: Arrumo rounds it. Plugins without one get a default icon."
     },
     "iconNotice": {
       "type": "string",

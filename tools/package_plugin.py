@@ -21,6 +21,7 @@ ADAPTERS = {
     "transcription-timed.json": ("transcription.schema.json", "transcription"),
     "speech-synthesis.json": ("speech-synthesis.schema.json", "text-to-speech"),
     "image-generation.json": ("image-generation.schema.json", "image-generation"),
+    "video-generation.json": ("video-generation.schema.json", "video-generation"),
 }
 
 
@@ -84,7 +85,7 @@ def validate_adapter(name, data, manifest):
          if setting["id"] == descriptor["credentialSetting"] and setting["kind"] == "secret"),
         None,
     )
-    if credential is None or (capability == "text-to-speech" and credential["scope"] != "workspace"):
+    if credential is None or (capability in ("text-to-speech", "video-generation") and credential["scope"] != "workspace"):
         raise ValueError(f"Adapter requires a matching secret setting: {name}")
     if name == "image-generation.json":
         model_setting = descriptor["model"].get("setting")
@@ -95,6 +96,12 @@ def validate_adapter(name, data, manifest):
             raise ValueError("Image adapter model setting must be a declared string setting")
         if not template_uses(descriptor["request"], "{prompt}"):
             raise ValueError("Image adapter request must contain {prompt}")
+    if name == "video-generation.json":
+        durations = descriptor["durations"]
+        if not durations["min"] <= durations["default"] <= durations["max"]:
+            raise ValueError("Video adapter durations must satisfy min <= default <= max")
+        if not template_uses(descriptor["request"], "{prompt}"):
+            raise ValueError("Video adapter request must contain {prompt}")
     if name == "transcription-timed.json" and "words" not in descriptor["response"]:
         raise ValueError("Timed transcription adapter requires a timing mapping")
 

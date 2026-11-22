@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo video generation adapter",
+  "description": "Declares how Arrumo asks a provider for one clip: submit a JSON job, poll its status address on the same host, then download the finished clip without credentials and store it as a workspace asset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pluginId",
+    "endpoint",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "aspectRatios",
+    "durations",
+    "request",
+    "submission",
+    "status",
+    "pollSeconds",
+    "timeoutSeconds",
+    "maxVideoBytes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "pluginId": {
+      "$ref": "#/$defs/id"
+    },
+    "endpoint": {
+      "description": "HTTPS endpoint that accepts the JSON job.",
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^https://[^/?#@ ]+/[^?#@ ]*$"
+    },
+    "credentialSetting": {
+      "description": "A workspace secret setting declared in the manifest.",
+      "$ref": "#/$defs/id"
+    },
+    "credentialHeader": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9-]+$"
+    },
+    "credentialPrefix": {
+      "enum": [
+        "",
+        "Bearer ",
+        "Key "
+      ]
+    },
+    "aspectRatios": {
+      "description": "Arrumo's ratios to the provider's value. Ratios a provider cannot make are left out, and the host skips that provider for them.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "16:9": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "9:16": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "1:1": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        }
+      }
+    },
+    "durations": {
+      "description": "Clip lengths in seconds. Requests are clamped to min and max.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max",
+        "default"
+      ],
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "default": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        }
+      }
+    },
+    "request": {
+      "description": "The JSON body. String values that are exactly {prompt}, {aspectRatio} or {duration} are replaced; {duration} becomes a number. {prompt} must appear.",
+      "type": "object"
+    },
+    "submission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "statusUrl"
+      ],
+      "properties": {
+        "statusUrl": {
+          "description": "Pointer to the job's HTTPS status address, which must be on the endpoint's host.",
+          "$ref": "#/$defs/pointer"
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "completed",
+        "failed",
+        "video"
+      ],
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/pointer"
+        },
+        "completed": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "failed": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "video": {
+          "description": "Pointer to the finished clip's HTTPS address.",
+          "$ref": "#/$defs/pointer"
+        },
+        "error": {
+          "description": "Optional pointer to a short failure reason shown to the creator.",
+          "$ref": "#/$defs/pointer"
+        }
+      }
+    },
+    "pollSeconds": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 60
+    },
+    "timeoutSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 3600
+    },
+    "maxVideoBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 524288000
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "pointer": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(/[^/]*)+$"
+    }
+  }
+}

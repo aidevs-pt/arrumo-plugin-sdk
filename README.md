@@ -227,6 +227,22 @@ in the declared header, refuses redirects, bounds the response by
 and stores it as a workspace asset. Providers are tried in the run's captured
 `image-generation` order; one without a configured credential is skipped.
 
+### Describe a video generation adapter
+
+A plugin declaring `video-generation` can provide a `video-generation.json`
+[descriptor](video-generation.schema.json) for an asynchronous HTTPS API. The
+host POSTs the `request` template with `{prompt}`, `{aspectRatio}` and
+`{duration}` filled in (the duration as a number, clamped to `durations`),
+reads the job's status address from `submission.statusUrl`, and polls it every
+`pollSeconds` until `status.state` is one of `completed` or `failed`, or until
+`timeoutSeconds` pass. The status address must be HTTPS on the endpoint's host,
+because it receives the credential. `status.video` points at the finished
+clip's HTTPS address, which the host downloads without the credential, bounds
+by `maxVideoBytes`, verifies as MP4, MOV or WebM, and stores as a workspace
+asset. `status.error` can point at a short reason shown to the creator.
+Providers are tried in the workspace's `video-generation` order; one without a
+configured key, or without the requested ratio in `aspectRatios`, is skipped.
+
 ### Introduction and the plugin tour
 
 Schema version 8 adds an optional `introduction`. When plugins arrive after the

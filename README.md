@@ -229,6 +229,14 @@ in the declared header, refuses redirects, bounds the response by
 and stores it as a workspace asset. Providers are tried in the run's captured
 `image-generation` order; one without a configured credential is skipped.
 
+Schema 2 adds asynchronous providers. With `job`, the host reads the status
+address from the submitted job, polls it on the endpoint's host with the
+credential, and downloads the finished image at `job.status.image` without it,
+the same way as video adapters; `response` is then left out. With `urls`
+references, each reference image is uploaded through `upload` (see the video
+adapter) and the public addresses are set as `field` of the JSON request posted
+to the references `endpoint`.
+
 ### Describe a video generation adapter
 
 A plugin declaring `video-generation` can provide a `video-generation.json`

@@ -14,12 +14,15 @@
     "model",
     "aspectRatios",
     "request",
-    "response",
     "maxImageBytes"
   ],
   "properties": {
     "schemaVersion": {
-      "const": 1
+      "enum": [
+        1,
+        2
+      ],
+      "description": "2 when job, upload or urls references are used."
     },
     "pluginId": {
       "$ref": "#/$defs/id"
@@ -40,7 +43,8 @@
     "credentialPrefix": {
       "enum": [
         "",
-        "Bearer "
+        "Bearer ",
+        "Key "
       ]
     },
     "model": {
@@ -96,7 +100,8 @@
           "description": "Pointer to the base64 image data, relative to the item when `items` is set.",
           "$ref": "#/$defs/pointer"
         }
-      }
+      },
+      "description": "Required unless job is set."
     },
     "maxImageBytes": {
       "type": "integer",
@@ -104,7 +109,7 @@
       "maximum": 20971520
     },
     "references": {
-      "description": "Optional. How the provider receives the creator's reference images. With multipart, the filled request's top-level fields become form fields posted to endpoint (same host as the main endpoint) and each image is a file part named fileField. With json, item (using {mimeType} and {imageBase64}) is appended per image to the array at pointer in the request. The host falls back to a plain request if one with references fails.",
+      "description": "Optional. How the provider receives the creator's reference images. With multipart, the filled request's top-level fields become form fields posted to endpoint (same host as the main endpoint) and each image is a file part named fileField. With json, item (using {mimeType} and {imageBase64}) is appended per image to the array at pointer in the request. The host falls back to a plain request if one with references fails. With urls (schema 2), images are uploaded and their addresses sent as a list.",
       "oneOf": [
         {
           "type": "object",
@@ -160,8 +165,146 @@
               "maximum": 8
             }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "encoding",
+            "endpoint",
+            "field",
+            "maxImages"
+          ],
+          "description": "Schema 2. Each image is uploaded through upload and the list of public addresses is set as field of the JSON request, posted to endpoint on the same host.",
+          "properties": {
+            "encoding": {
+              "const": "urls"
+            },
+            "endpoint": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^https://[A-Za-z0-9.-]+(/([A-Za-z0-9._~:-]|\\{model\\})+)+$"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "maxImages": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            }
+          }
         }
       ]
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "submission",
+        "status",
+        "pollSeconds",
+        "timeoutSeconds"
+      ],
+      "description": "Schema 2. The request starts a job: the host polls the status address on the endpoint's host with the credential, then downloads the finished image without it, bounded by maxImageBytes.",
+      "properties": {
+        "submission": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "statusUrl"
+          ],
+          "properties": {
+            "statusUrl": {
+              "description": "Pointer to the job's HTTPS status address, which must be on the endpoint's host.",
+              "$ref": "#/$defs/pointer"
+            }
+          }
+        },
+        "status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "completed",
+            "failed",
+            "image"
+          ],
+          "properties": {
+            "state": {
+              "$ref": "#/$defs/pointer"
+            },
+            "completed": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "failed": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "error": {
+              "description": "Optional pointer to a short failure reason shown to the creator.",
+              "$ref": "#/$defs/pointer"
+            },
+            "image": {
+              "description": "JSON pointer to the finished image's HTTPS address.",
+              "$ref": "#/$defs/pointer"
+            }
+          }
+        },
+        "pollSeconds": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 60
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 1800
+        }
+      }
+    },
+    "upload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint",
+        "request",
+        "uploadUrl",
+        "publicUrl"
+      ],
+      "description": "Required when a variant takes references. The host POSTs request (with {contentType}) and the credential to endpoint on the provider's host, then PUTs the file without the credential to the HTTPS address at uploadUrl, refusing redirects and sending only content-type and x-amz-* headers from headers. The address at publicUrl goes into the generation request.",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[^/?#@ ]+/[^?#@ ]*$"
+        },
+        "request": {
+          "type": "object"
+        },
+        "uploadUrl": {
+          "$ref": "#/$defs/pointer"
+        },
+        "publicUrl": {
+          "$ref": "#/$defs/pointer"
+        },
+        "headers": {
+          "$ref": "#/$defs/pointer"
+        }
+      }
     }
   },
   "$defs": {

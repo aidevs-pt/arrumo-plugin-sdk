@@ -220,7 +220,9 @@ freezes the resolved values into each generation run so it can be reproduced.
 `progress` lets the host show what the agent is doing while it works. Each
 entry is a regular expression matched against every line the agent prints;
 its first capture group (or `label`) becomes a step of kind `thinking`,
-`search` or `step`, so creators can follow the reasoning and searches live.
+`search` or `step`, so creators can follow the reasoning and searches live. Agents that print one JSON event per line add a `pointer` to each pattern to
+match the text at that place in the event, and read their answer with the result
+source `stdoutLastLine`.
 
 Agents that can look at images declare `imageArgs`, such as `["-i", "{imagePath}"]`,
 and place `{images}` in `args`. The host repeats those arguments once per image

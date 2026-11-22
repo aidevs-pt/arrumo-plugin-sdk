@@ -171,6 +171,12 @@
                       "kind"
                     ],
                     "properties": {
+                      "pointer": {
+                        "description": "For agents that print one JSON event per line: the JSON Pointer to the text to match, such as a search query or a thinking summary. Lines without a string there are skipped; only the text's first line is matched.",
+                        "type": "string",
+                        "pattern": "^(/[^/]+)+$",
+                        "maxLength": 128
+                      },
                       "pattern": {
                         "type": "string",
                         "minLength": 1,
@@ -200,7 +206,8 @@
                     "source": {
                       "enum": [
                         "outputFile",
-                        "stdout"
+                        "stdout",
+                        "stdoutLastLine"
                       ],
                       "description": "Where the JSON answer appears."
                     },

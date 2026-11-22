@@ -183,6 +183,23 @@ in the declared header, refuses redirects, bounds the response by
 and stores it as a workspace asset. Providers are tried in the run's captured
 `image-generation` order; one without a configured credential is skipped.
 
+### Introduction and the plugin tour
+
+Schema version 8 adds an optional `introduction`. When plugins arrive after the
+creator's first launch (installed from a ZIP or the registry, or bundled by an
+update), Arrumo introduces them in one shared tour, one page per plugin with its
+name, `headline` and `body`. Plugins present on first launch are not toured.
+Creators can replay the tour from Settings › Plugins. Text is keyed by language:
+`en` is required, `es` and `pt` are used when the app is in those languages.
+Headlines are at most 80 characters and bodies 320.
+
+```json
+"introduction": {
+  "headline": {"en": "Your videos, in more languages", "es": "Tus vídeos, en más idiomas"},
+  "body": {"en": "Pick a finished video and the languages you want…"}
+}
+```
+
 ### Structured agent runs
 
 Schema version 7 lets an agent provider declare `agentProvider.cli.structuredRun`.

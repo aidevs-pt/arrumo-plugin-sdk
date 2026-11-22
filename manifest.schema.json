@@ -19,7 +19,8 @@
         4,
         5,
         6,
-        7
+        7,
+        8
       ]
     },
     "id": {
@@ -368,6 +369,65 @@
       "items": {
         "$ref": "#/$defs/action"
       }
+    },
+    "introduction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "headline",
+        "body"
+      ],
+      "description": "Schema 8: shown once in the plugin tour after the plugin arrives. English is required; Spanish and Portuguese are used when the app is in those languages.",
+      "properties": {
+        "headline": {
+          "type": "object",
+          "required": [
+            "en"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "en": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 80
+            },
+            "es": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 80
+            },
+            "pt": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 80
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "required": [
+            "en"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "en": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 320
+            },
+            "es": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 320
+            },
+            "pt": {
+              "type": "string",
+              "pattern": "\\S",
+              "maxLength": 320
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -604,7 +664,8 @@
               4,
               5,
               6,
-              7
+              7,
+              8
             ]
           }
         }
@@ -624,7 +685,8 @@
               4,
               5,
               6,
-              7
+              7,
+              8
             ]
           }
         }
@@ -662,7 +724,8 @@
               4,
               5,
               6,
-              7
+              7,
+              8
             ]
           }
         }
@@ -701,7 +764,8 @@
             "enum": [
               5,
               6,
-              7
+              7,
+              8
             ]
           }
         }
@@ -718,12 +782,16 @@
           "code"
         ],
         "properties": {
-          "schemaVersion": {
-            "const": 6
-          },
           "code": {
             "required": [
               "backend"
+            ]
+          },
+          "schemaVersion": {
+            "enum": [
+              6,
+              7,
+              8
             ]
           }
         }
@@ -756,6 +824,20 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "introduction"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "const": 8
           }
         }
       }

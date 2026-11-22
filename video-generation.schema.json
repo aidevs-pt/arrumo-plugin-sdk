@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Arrumo video generation adapter",
-  "description": "Declares how Arrumo asks a provider for one clip: submit a JSON job, poll its status address on the same host, then download the finished clip without credentials and store it as a workspace asset.",
+  "description": "Declares how Arrumo asks a provider for one clip: submit a JSON job, poll its status address on the same host, then download the finished clip without credentials and store it as a workspace asset. Schema 2 adds named models whose request variants are chosen by the reference images and videos supplied, and a presigned upload flow for those references.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -22,7 +22,11 @@
   ],
   "properties": {
     "schemaVersion": {
-      "const": 1
+      "enum": [
+        1,
+        2
+      ],
+      "description": "2 when model, models or upload is used."
     },
     "pluginId": {
       "$ref": "#/$defs/id"
@@ -172,6 +176,70 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 524288000
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default"
+      ],
+      "description": "Which of models to use when the caller names none: the plugin setting's value, else default.",
+      "properties": {
+        "default": {
+          "type": "string"
+        },
+        "setting": {
+          "$ref": "#/$defs/id",
+          "description": "A string setting whose choices are all keys of models."
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 32,
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9.-]{0,63}$"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 4,
+        "items": {
+          "$ref": "#/$defs/variant"
+        }
+      },
+      "description": "Each model's variants. The top-level endpoint, aspectRatios, durations and request remain for schema 1 hosts."
+    },
+    "upload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint",
+        "request",
+        "uploadUrl",
+        "publicUrl"
+      ],
+      "description": "Required when a variant takes references. The host POSTs request (with {contentType}) and the credential to endpoint on the provider's host, then PUTs the file without the credential to the HTTPS address at uploadUrl, refusing redirects and sending only content-type and x-amz-* headers from headers. The address at publicUrl goes into the generation request.",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[^/?#@ ]+/[^?#@ ]*$"
+        },
+        "request": {
+          "type": "object"
+        },
+        "uploadUrl": {
+          "$ref": "#/$defs/pointer"
+        },
+        "publicUrl": {
+          "$ref": "#/$defs/pointer"
+        },
+        "headers": {
+          "$ref": "#/$defs/pointer"
+        }
+      }
     }
   },
   "$defs": {
@@ -184,6 +252,104 @@
       "type": "string",
       "maxLength": 128,
       "pattern": "^(/[^/]*)+$"
+    },
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint",
+        "durations",
+        "request"
+      ],
+      "description": "One way to call a model. The host uses the first variant whose images and videos ranges fit the references supplied; an absent range takes none.",
+      "properties": {
+        "endpoint": {
+          "description": "HTTPS endpoint on the same host as the top-level endpoint.",
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^https://[^/?#@ ]+/[^?#@ ]*$"
+        },
+        "aspectRatios": {
+          "description": "Required unless the variant needs at least one image, whose shape the output then follows.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "16:9": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "9:16": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "1:1": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            }
+          }
+        },
+        "durations": {
+          "description": "Clip lengths in seconds. Requests are clamped to min and max.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min",
+            "max",
+            "default"
+          ],
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            },
+            "max": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            },
+            "default": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            }
+          }
+        },
+        "request": {
+          "description": "JSON body template. Besides {prompt}, {aspectRatio} and {duration}, {image} and {video} take the first uploaded reference's address and {images} and {videos} the list; a field whose placeholder has no value is left out.",
+          "type": "object"
+        },
+        "images": {
+          "$ref": "#/$defs/range",
+          "description": "Reference images this variant takes, at most 9. The request must use {images}, or {image} when max is 1."
+        },
+        "videos": {
+          "$ref": "#/$defs/range",
+          "description": "Reference MP4 videos this variant takes, at most 3. The request must use {videos}, or {video} when max is 1."
+        }
+      }
     }
   }
 }

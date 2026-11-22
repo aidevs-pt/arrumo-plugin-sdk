@@ -245,6 +245,19 @@ asset. `status.error` can point at a short reason shown to the creator.
 Providers are tried in the workspace's `video-generation` order; one without a
 configured key, or without the requested ratio in `aspectRatios`, is skipped.
 
+Schema 2 descriptors can offer several models. `models` maps each model ID to
+up to four request variants; the host calls the first variant whose `images`
+and `videos` ranges fit the reference media the creator or agent attached (an
+absent range takes none), so one model can have text-to-video, image-to-video
+and reference-to-video endpoints. `model.default` and an optional string
+setting with matching `choices` pick the model when the caller names none.
+References are workspace image or MP4 assets: the host uploads each through
+`upload` (a credentialed POST on the provider's host that returns a presigned
+HTTPS address and a public one, then a PUT without the credential) and fills
+`{image}`, `{images}`, `{video}` or `{videos}` with the public addresses. The
+top-level `endpoint`, `aspectRatios`, `durations` and `request` stay as the
+schema 1 fallback.
+
 ### Describe a usage adapter
 
 A provider plugin can add a `usage.json` [descriptor](usage.schema.json) so

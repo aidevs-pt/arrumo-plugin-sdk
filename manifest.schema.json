@@ -20,7 +20,8 @@
         5,
         6,
         7,
-        8
+        8,
+        9
       ]
     },
     "id": {
@@ -548,10 +549,6 @@
               "additionalProperties": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [
-                  "label",
-                  "description"
-                ],
                 "properties": {
                   "label": {
                     "type": "string",
@@ -562,6 +559,33 @@
                     "type": "string",
                     "pattern": "\\S",
                     "maxLength": 500
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "pattern": "\\S",
+                          "maxLength": 80
+                        },
+                        "description": {
+                          "type": "string",
+                          "pattern": "\\S",
+                          "maxLength": 300
+                        },
+                        "choices": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string",
+                            "pattern": "\\S",
+                            "maxLength": 80
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -656,10 +680,6 @@
               "additionalProperties": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [
-                  "label",
-                  "description"
-                ],
                 "properties": {
                   "label": {
                     "type": "string",
@@ -670,6 +690,33 @@
                     "type": "string",
                     "pattern": "\\S",
                     "maxLength": 500
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "pattern": "\\S",
+                          "maxLength": 80
+                        },
+                        "description": {
+                          "type": "string",
+                          "pattern": "\\S",
+                          "maxLength": 300
+                        },
+                        "choices": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string",
+                            "pattern": "\\S",
+                            "maxLength": 80
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -764,10 +811,6 @@
               "additionalProperties": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [
-                  "label",
-                  "description"
-                ],
                 "properties": {
                   "label": {
                     "type": "string",
@@ -778,6 +821,33 @@
                     "type": "string",
                     "pattern": "\\S",
                     "maxLength": 500
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "pattern": "\\S",
+                          "maxLength": 80
+                        },
+                        "description": {
+                          "type": "string",
+                          "pattern": "\\S",
+                          "maxLength": 300
+                        },
+                        "choices": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string",
+                            "pattern": "\\S",
+                            "maxLength": 80
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -1006,6 +1076,95 @@
           "enum": [
             "app",
             "workspace"
+          ]
+        },
+        "inputs": {
+          "description": "Schema 9: the form Arrumo shows for the action. The host sends an object keyed by input ID. Without inputs the action takes a JSON object typed by hand.",
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/actionInput"
+          }
+        },
+        "placements": {
+          "description": "Schema 9: where Arrumo offers the action besides Settings: beside a draft, on a video's generation page, or on a finished video.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "draft",
+              "generation",
+              "completed-video"
+            ]
+          }
+        }
+      }
+    },
+    "actionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "kind"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "label": {
+          "type": "string",
+          "pattern": "\\S",
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "kind": {
+          "description": "text and longText send a string; number a number; boolean true or false; choice one of choices; language a language tag; subtitles the text of an SRT track, picked from the video in view, opened from a file or pasted; json any JSON value typed by hand.",
+          "enum": [
+            "text",
+            "longText",
+            "number",
+            "boolean",
+            "choice",
+            "language",
+            "subtitles",
+            "json"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "choices": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "pattern": "\\S",
+            "maxLength": 80
+          },
+          "description": "Only for kind choice."
+        }
+      },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "choice"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "choices"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "choices"
           ]
         }
       }

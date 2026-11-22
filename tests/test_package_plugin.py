@@ -166,6 +166,30 @@ class PackagePluginTest(unittest.TestCase):
         with self.assertRaises(Exception):
             build_package(self.source, [])
 
+    def test_image_input_needs_schema_thirteen(self):
+        manifest = {
+            "schemaVersion": 13, "id": "example-agent", "name": "Example agent",
+            "description": "An agent provider.",
+            "capabilities": {"agents": {"name": "Agent", "description": "Runs editing stages."}},
+            "agentProvider": {"label": "Example", "setupUrl": "https://example.com/setup",
+                              "cli": {"executable": "example", "authStatusArgs": ["auth", "status"],
+                                      "structuredRun": {
+                                          "args": ["--print", "--json-schema", "{schema}"],
+                                          "imageInput": {
+                                              "args": ["--input-format", "json"],
+                                              "stdin": {"content": ["{images}", {"text": "{prompt}"}]},
+                                              "image": {"data": "{data}", "type": "{mediaType}"},
+                                          },
+                                          "result": {"source": "stdoutLastLine", "pointer": "/output"},
+                                      }}},
+        }
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        build_package(self.source, [])
+        manifest["schemaVersion"] = 12
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaises(Exception):
+            build_package(self.source, [])
+
     def test_validates_audio_adapter_kinds_against_capabilities(self):
         manifest = json.loads(self.manifest)
         manifest["settings"][0]["scope"] = "workspace"

@@ -24,7 +24,8 @@
         9,
         10,
         11,
-        12
+        12,
+        13
       ]
     },
     "id": {
@@ -162,6 +163,32 @@
                   "items": {
                     "type": "string",
                     "maxLength": 128
+                  }
+                },
+                "imageInput": {
+                  "description": "Schema 13. How to show images to an agent that reads a structured message on stdin instead of taking image arguments. When images are attached, args are added to the run and stdin becomes one JSON line built from the stdin template: the string \"{prompt}\" becomes the prompt and an array element \"{images}\" expands to one copy of the image template per image, with \"{data}\" replaced by the image's base64 bytes and \"{mediaType}\" by its type (image/png or image/jpeg). Runs without images send the plain prompt.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "args",
+                    "stdin",
+                    "image"
+                  ],
+                  "properties": {
+                    "args": {
+                      "type": "array",
+                      "maxItems": 8,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 128
+                      }
+                    },
+                    "stdin": {
+                      "type": "object"
+                    },
+                    "image": {
+                      "type": "object"
+                    }
                   }
                 },
                 "progress": {
@@ -1388,7 +1415,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1413,7 +1441,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1456,7 +1485,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1500,7 +1530,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1530,7 +1561,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1581,7 +1613,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1615,7 +1648,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1669,7 +1703,8 @@
               9,
               10,
               11,
-              12
+              12,
+              13
             ]
           }
         }
@@ -1734,6 +1769,41 @@
         "properties": {
           "schemaVersion": {
             "minimum": 12
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "agentProvider": {
+            "properties": {
+              "cli": {
+                "properties": {
+                  "structuredRun": {
+                    "required": [
+                      "imageInput"
+                    ]
+                  }
+                },
+                "required": [
+                  "structuredRun"
+                ]
+              }
+            },
+            "required": [
+              "cli"
+            ]
+          }
+        },
+        "required": [
+          "agentProvider"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "minimum": 13
           }
         }
       }

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Arrumo provider usage adapter",
+  "description": "Declares how Arrumo reads how much of a provider's allowance is used, so it can warn at 20% and 10% left. The host sends a GET with the workspace credential and reads two numbers from the JSON response.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pluginId",
+    "endpoint",
+    "credentialSetting",
+    "credentialHeader",
+    "credentialPrefix",
+    "used",
+    "limit",
+    "unit"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "pluginId": {
+      "$ref": "#/$defs/id"
+    },
+    "endpoint": {
+      "description": "HTTPS endpoint answering a GET with JSON.",
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^https://[^/?#@ ]+/[^#@ ]*$"
+    },
+    "credentialSetting": {
+      "description": "A workspace secret setting declared in the manifest.",
+      "$ref": "#/$defs/id"
+    },
+    "credentialHeader": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9-]+$"
+    },
+    "credentialPrefix": {
+      "enum": [
+        "",
+        "Bearer ",
+        "Key "
+      ]
+    },
+    "used": {
+      "description": "Pointer to the amount used in the current period.",
+      "$ref": "#/$defs/pointer"
+    },
+    "limit": {
+      "description": "Pointer to the period's allowance.",
+      "$ref": "#/$defs/pointer"
+    },
+    "resetsAt": {
+      "description": "Optional pointer to when the allowance resets, in Unix seconds.",
+      "$ref": "#/$defs/pointer"
+    },
+    "unit": {
+      "enum": [
+        "characters",
+        "credits",
+        "requests",
+        "seconds"
+      ]
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "pointer": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(/[^/]*)+$"
+    }
+  }
+}

@@ -243,6 +243,17 @@ asset. `status.error` can point at a short reason shown to the creator.
 Providers are tried in the workspace's `video-generation` order; one without a
 configured key, or without the requested ratio in `aspectRatios`, is skipped.
 
+### Describe a usage adapter
+
+A provider plugin can add a `usage.json` [descriptor](usage.schema.json) so
+creators see how much of its allowance is left. The host sends a GET to
+`endpoint` with the workspace credential, refuses redirects, and reads the
+numbers at the `used` and `limit` pointers (and optionally `resetsAt`, in Unix
+seconds). Arrumo shows the remaining share in Settings › Services and keys,
+warns across the top of the app at 20% left and again in the danger color at
+10%, and repeats the warning before a generation that uses the provider. A
+failed read is shown as unknown, never as empty.
+
 ### Introduction and the plugin tour
 
 Schema version 8 adds an optional `introduction`. When plugins arrive after the

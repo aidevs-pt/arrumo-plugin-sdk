@@ -22,6 +22,8 @@ ADAPTERS = {
     "speech-synthesis.json": ("speech-synthesis.schema.json", "text-to-speech"),
     "image-generation.json": ("image-generation.schema.json", "image-generation"),
     "video-generation.json": ("video-generation.schema.json", "video-generation"),
+    # Usage belongs to the provider rather than one capability.
+    "usage.json": ("usage.schema.json", None),
 }
 
 
@@ -78,7 +80,7 @@ def validate_adapter(name, data, manifest):
     schema = json.loads((SCHEMA_DIR / schema_name).read_text(encoding="utf-8"))
     descriptor = json.loads(data.decode("utf-8"), object_pairs_hook=unique_fields)
     Draft202012Validator(schema).validate(descriptor)
-    if descriptor["pluginId"] != manifest["id"] or capability not in manifest["capabilities"]:
+    if descriptor["pluginId"] != manifest["id"] or (capability is not None and capability not in manifest["capabilities"]):
         raise ValueError(f"Adapter does not match the manifest identity and capabilities: {name}")
     credential = next(
         (setting for setting in manifest.get("settings", [])

@@ -130,6 +130,22 @@ class PackagePluginTest(unittest.TestCase):
                 write(changed)
                 build_package(self.source, [name])
 
+    def test_packages_a_usage_adapter_without_a_capability(self):
+        name = "usage.json"
+        descriptor = {
+            "schemaVersion": 1, "pluginId": "example-transcription",
+            "endpoint": "https://example.com/v1/user/subscription",
+            "credentialSetting": "api-key", "credentialHeader": "x-api-key", "credentialPrefix": "",
+            "used": "/character_count", "limit": "/character_limit", "unit": "characters",
+        }
+        (self.source / name).write_text(json.dumps(descriptor), encoding="utf-8")
+        package, _ = build_package(self.source, [name])
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertEqual(json.loads(archive.read(name)), descriptor)
+        (self.source / name).write_text(json.dumps({**descriptor, "pluginId": "other"}), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            build_package(self.source, [name])
+
     def test_validates_image_adapter_placeholders_and_model_setting(self):
         manifest = json.loads(self.manifest)
         manifest["capabilities"]["image-generation"] = {

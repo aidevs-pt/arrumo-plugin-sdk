@@ -8,7 +8,7 @@ For custom AI solutions for your company, visit [DEVS AI](https://aidevs.pt).
 
 ## First plugin
 
-Build, package, install, and run the isolated echo action. [English](docs/en/first-plugin.md) · [Español](docs/es/first-plugin.md) · [Português](docs/pt/first-plugin.md)
+Build, package, install, and run the isolated echo action. [English](https://github.com/aidevs-pt/arrumo-docs/blob/main/content/docs/en/developer/first-plugin.md) · [Español](https://github.com/aidevs-pt/arrumo-docs/blob/main/content/docs/es/developer/first-plugin.md) · [Português](https://github.com/aidevs-pt/arrumo-docs/blob/main/content/docs/pt/developer/first-plugin.md)
 
 ## Draft manifest
 

@@ -146,6 +146,50 @@ class PackagePluginTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_package(self.source, [name])
 
+    def test_validates_audio_adapter_kinds_against_capabilities(self):
+        manifest = json.loads(self.manifest)
+        manifest["settings"][0]["scope"] = "workspace"
+        manifest["capabilities"]["music-generation"] = {"name": "Music", "description": "Compose music."}
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        name = "audio-generation.json"
+        music = {
+            "endpoint": "https://example.com/v1/music", "promptField": "prompt",
+            "durationField": "music_length_ms", "durationUnit": "milliseconds",
+            "minSeconds": 3, "maxSeconds": 600, "maxPromptCharacters": 2000,
+            "body": {"model_id": "music_v1", "force_instrumental": True},
+            "query": {"output_format": "mp3_44100_128"},
+        }
+        descriptor = {
+            "schemaVersion": 1, "pluginId": "example-transcription", "credentialSetting": "api-key",
+            "credentialHeader": "x-api-key", "credentialPrefix": "", "responseFormat": "mp3",
+            "kinds": {"music": music},
+        }
+        adapter = self.source / name
+
+        def write(value):
+            adapter.write_text(json.dumps(value), encoding="utf-8")
+
+        write(descriptor)
+        package, _ = build_package(self.source, [name])
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertEqual(json.loads(archive.read(name)), descriptor)
+        for changed, error in (
+            (dict(descriptor, kinds={"sound-effect": music}), "sound-effect-generation capability"),
+            (dict(descriptor, kinds={"music": dict(music, minSeconds=700)}), "minSeconds <= maxSeconds"),
+            (dict(descriptor, kinds={"music": dict(music, body={"prompt": "x"})}), "twice"),
+        ):
+            with self.subTest(error=error), self.assertRaisesRegex(ValueError, error):
+                write(changed)
+                build_package(self.source, [name])
+        for changed in (
+            dict(descriptor, kinds={"music": dict(music, endpoint="http://example.com/v1/music")}),
+            dict(descriptor, kinds={"speech": music}),
+            dict(descriptor, kinds={"music": dict(music, durationUnit="minutes")}),
+        ):
+            with self.subTest(changed=changed), self.assertRaises(Exception):
+                write(changed)
+                build_package(self.source, [name])
+
     def test_validates_image_adapter_placeholders_and_model_setting(self):
         manifest = json.loads(self.manifest)
         manifest["capabilities"]["image-generation"] = {

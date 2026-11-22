@@ -22,6 +22,8 @@ ADAPTERS = {
     "speech-synthesis.json": ("speech-synthesis.schema.json", "text-to-speech"),
     "image-generation.json": ("image-generation.schema.json", "image-generation"),
     "video-generation.json": ("video-generation.schema.json", "video-generation"),
+    # Each kind it declares needs its own capability, checked below.
+    "audio-generation.json": ("audio-generation.schema.json", None),
     # Usage belongs to the provider rather than one capability.
     "usage.json": ("usage.schema.json", None),
 }
@@ -104,6 +106,16 @@ def validate_adapter(name, data, manifest):
             raise ValueError("Video adapter durations must satisfy min <= default <= max")
         if not template_uses(descriptor["request"], "{prompt}"):
             raise ValueError("Video adapter request must contain {prompt}")
+    if name == "audio-generation.json":
+        for kind, entry in descriptor["kinds"].items():
+            if f"{kind}-generation" not in manifest["capabilities"]:
+                raise ValueError(f"Audio adapter kind {kind} needs the {kind}-generation capability")
+            if entry["minSeconds"] > entry["maxSeconds"]:
+                raise ValueError(f"Audio adapter kind {kind} must satisfy minSeconds <= maxSeconds")
+            if entry["promptField"] == entry["durationField"] or {entry["promptField"], entry["durationField"]} & set(entry["body"]):
+                raise ValueError(f"Audio adapter kind {kind} sets its prompt or duration twice")
+        if credential["scope"] != "workspace":
+            raise ValueError("Audio adapter requires a workspace secret")
     if name == "transcription-timed.json" and "words" not in descriptor["response"]:
         raise ValueError("Timed transcription adapter requires a timing mapping")
 

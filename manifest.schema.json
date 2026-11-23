@@ -166,7 +166,7 @@
                   }
                 },
                 "imageInput": {
-                  "description": "Schema 13. How to show images to an agent that reads a structured message on stdin instead of taking image arguments. When images are attached, args are added to the run and stdin becomes one JSON line built from the stdin template: the string \"{prompt}\" becomes the prompt and an array element \"{images}\" expands to one copy of the image template per image, with \"{data}\" replaced by the image's base64 bytes and \"{mediaType}\" by its type (image/png or image/jpeg). Runs without images send the plain prompt.",
+                  "description": "Schema 13. How to show images to an agent that reads a structured message on stdin instead of taking image arguments. When images are attached, args are added to the run and stdin becomes one JSON line built from the stdin template: the string \"{prompt}\" becomes the prompt and an array element \"{images}\" expands to one copy of the image template per image, with \"{data}\" replaced by the image's base64 bytes and \"{mediaType}\" by its type (image/png, image/jpeg, image/gif or image/webp; other images and ones over 5 MB are left out). Runs without images send the plain prompt.",
                   "type": "object",
                   "additionalProperties": false,
                   "required": [

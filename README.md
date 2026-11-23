@@ -43,6 +43,10 @@ The JSON schemas in this repository are the source of truth. [Arrumo Docs](https
 | [Agent providers](https://www.aidevs.pt/tools/arrumo/docs/developer/sdk/agents) | Status checks, structured runs, images, plan usage, follow-up messages | [`manifest.schema.json`](manifest.schema.json) |
 | [Motion renderers](https://www.aidevs.pt/tools/arrumo/docs/developer/sdk/motion) | Motion results and artifacts, the Linux renderer sandbox, the SDK worker | [`motion-result`](motion-result.schema.json), [`motion-artifacts`](motion-artifacts.schema.json), [`tools/run_motion_package.py`](tools/run_motion_package.py) |
 
+## Contributing
+
+Contributions are welcome: read [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md). Report security problems privately as described in [SECURITY.md](SECURITY.md).
+
 ## License
 
 Copyright © 2026 DEVS AI Unipessoal LDA. Licensed under the [GNU Affero General Public License v3.0](LICENSE). Part of [Arrumo AI Video Editor](https://github.com/aidevs-pt/arrumo-video-editor), built by [DEVS AI](https://aidevs.pt), who make custom AI solutions for companies.

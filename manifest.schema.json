@@ -25,7 +25,8 @@
         10,
         11,
         12,
-        13
+        13,
+        14
       ]
     },
     "id": {
@@ -122,7 +123,7 @@
                   }
                 },
                 "settingArgs": {
-                  "description": "Arguments that follow the plugin's settings, inserted in order at the {settings} placeholder. Boolean settings use args when true and otherwise when false. Other settings use args when they have a value, replacing {value} inside each argument with it; string values must come from the setting's choices.",
+                  "description": "Arguments that follow the plugin's settings, inserted in order at the {settings} placeholder. Boolean settings use args when true and otherwise when false. Other settings use args when they have a value, replacing {value} inside each argument with it; string values must come from the setting's choices. Schema 14: an entry with when applies only while that boolean setting is on, and one with unless only while it is off, so two settings can share an argument such as a tool list.",
                   "type": "array",
                   "maxItems": 16,
                   "items": {
@@ -151,6 +152,14 @@
                           "type": "string",
                           "maxLength": 256
                         }
+                      },
+                      "when": {
+                        "description": "Schema 14. A boolean setting that must be on for this entry to apply.",
+                        "$ref": "#/$defs/identifier"
+                      },
+                      "unless": {
+                        "description": "Schema 14. A boolean setting that must be off for this entry to apply.",
+                        "$ref": "#/$defs/identifier"
                       }
                     }
                   }
@@ -354,6 +363,10 @@
                       }
                     }
                   }
+                },
+                "workFolderSetting": {
+                  "description": "Schema 14. A boolean setting that, while on, means the agent may write files and run commands. The editor then runs every stage of a video in one work folder kept for that video's run, tells the agent so, and removes the folder after the run ends. Declare the matching arguments in settingArgs.",
+                  "$ref": "#/$defs/identifier"
                 }
               }
             },
@@ -708,6 +721,11 @@
                       "pattern": "\\S",
                       "maxLength": 80
                     }
+                  },
+                  "warning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
                   }
                 }
               }
@@ -839,6 +857,11 @@
                       "pattern": "\\S",
                       "maxLength": 80
                     }
+                  },
+                  "warning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
                   }
                 }
               }
@@ -970,6 +993,11 @@
                       "pattern": "\\S",
                       "maxLength": 80
                     }
+                  },
+                  "warning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
                   }
                 }
               }
@@ -1110,6 +1138,16 @@
           "type": "string",
           "maxLength": 512,
           "pattern": "^https://[^\\s#@]+$"
+        },
+        "warning": {
+          "description": "Schema 14. A short caution shown while a boolean setting is on, such as what it lets the plugin do on the creator's computer.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "hiddenWhen": {
+          "description": "Schema 14. Another boolean setting of this plugin that, while on, makes this one irrelevant, so the editor hides it.",
+          "$ref": "#/$defs/identifier"
         }
       }
     },

@@ -354,6 +354,14 @@ class NamedModelTest(unittest.TestCase):
         self.build("video-generation.json", self.video)
         self.build("image-generation.json", self.image)
 
+    def test_adapters_may_outgrow_a_manifest_up_to_256_kib(self):
+        text = json.dumps(self.video)
+        (self.source / "video-generation.json").write_text(text.ljust(100 * 1024), encoding="utf-8")
+        build_package(self.source, ["video-generation.json"])
+        (self.source / "video-generation.json").write_text(text.ljust(257 * 1024), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "size limit: video-generation.json"):
+            build_package(self.source, ["video-generation.json"])
+
     def test_rejects_inconsistent_video_models(self):
         quick = self.video["models"]["quick"]
         cases = [

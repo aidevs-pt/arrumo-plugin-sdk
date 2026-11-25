@@ -12,6 +12,8 @@ from jsonschema import Draft202012Validator, ValidationError
 
 MAX_PACKAGE = 16 * 1024 * 1024
 MAX_MANIFEST = 64 * 1024
+# Provider adapters list every model a provider offers, so they outgrow a manifest.
+MAX_ADAPTER = 256 * 1024
 MAX_ENTRIES = 512
 MAX_ICON = 8 * 1024
 SCHEMA_DIR = Path(__file__).resolve().parent.parent
@@ -232,7 +234,7 @@ def build_package(root, extra_files):
             if name == "manifest.json":
                 data = manifest_bytes
             else:
-                limit = min(remaining, MAX_MANIFEST) if name in ADAPTERS else remaining
+                limit = min(remaining, MAX_ADAPTER) if name in ADAPTERS else remaining
                 if name == icon:
                     limit = min(limit, MAX_ICON)
                 data = read_file(root, name, limit)

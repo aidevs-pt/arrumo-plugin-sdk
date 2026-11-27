@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-2337B4"></a>
-  <img alt="Manifest schema 15" src="https://img.shields.io/badge/manifest%20schema-15-111">
+  <img alt="Manifest schema 16" src="https://img.shields.io/badge/manifest%20schema-16-111">
   <a href="https://www.aidevs.pt/tools/arrumo/docs/developer/sdk"><img alt="Docs in English, Spanish and Portuguese" src="https://img.shields.io/badge/docs-EN%20%C2%B7%20ES%20%C2%B7%20PT-2337B4"></a>
 </p>
 

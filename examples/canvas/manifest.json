@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 17,
+  "id": "example-canvas",
+  "name": "Example canvas renderer",
+  "description": "Lets agents draw animation layers as web pages.",
+  "capabilities": {
+    "canvas-render": {
+      "name": "Canvas layers",
+      "description": "Draws animation layers with WebGL, canvas, SVG and CSS."
+    }
+  },
+  "canvasRenderer": {
+    "browser": {
+      "linux-x64": {
+        "url": "https://downloads.example.com/headless-browser-linux64.zip",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "size": 110000000,
+        "executable": "headless-browser-linux64/headless-browser"
+      }
+    },
+    "libraries": [
+      {
+        "id": "tween",
+        "version": "1.0.0",
+        "file": "lib/tween.js",
+        "module": true,
+        "license": "MIT",
+        "description": "Easing helpers: import { ease } from \"tween\"."
+      }
+    ],
+    "guide": "guide.md"
+  }
+}

@@ -18,6 +18,7 @@ MAX_ENTRIES = 512
 MAX_ICON = 8 * 1024
 SCHEMA_DIR = Path(__file__).resolve().parent.parent
 SCHEMA = SCHEMA_DIR / "manifest.schema.json"
+MAX_CANVAS_GUIDE = 32 * 1024
 ADAPTERS = {
     "transcription.json": ("transcription.schema.json", "transcription"),
     "transcription-timed.json": ("transcription.schema.json", "transcription"),
@@ -209,6 +210,14 @@ def build_package(root, extra_files):
     # The declared icon always travels with the package.
     icon = manifest.get("icon")
     names = ["manifest.json", *extra_files, *([icon] if icon and icon not in extra_files else [])]
+    canvas = manifest.get("canvasRenderer")
+    if canvas:
+        library_ids = [library["id"] for library in canvas["libraries"]]
+        if len(library_ids) != len(set(library_ids)):
+            raise ValueError("Duplicate canvas library ID")
+        for name in [canvas["guide"], *(library["file"] for library in canvas["libraries"])]:
+            if name not in names:
+                names.append(name)
     validate_package_paths(names)
     setting_ids = [setting["id"] for setting in manifest.get("settings", [])]
     if len(setting_ids) != len(set(setting_ids)):
@@ -239,6 +248,10 @@ def build_package(root, extra_files):
                     limit = min(limit, MAX_ICON)
                 data = read_file(root, name, limit)
                 remaining -= len(data)
+                if canvas and name == canvas["guide"]:
+                    if len(data) > MAX_CANVAS_GUIDE:
+                        raise ValueError("The canvas guide exceeds 32 KiB")
+                    data.decode("utf-8")
                 if name in ADAPTERS:
                     validate_adapter(name, data, manifest)
             if name in entrypoints and not data:

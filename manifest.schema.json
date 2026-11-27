@@ -28,7 +28,8 @@
         13,
         14,
         15,
-        16
+        16,
+        17
       ]
     },
     "id": {
@@ -614,6 +615,9 @@
           }
         }
       }
+    },
+    "canvasRenderer": {
+      "$ref": "#/$defs/canvasRenderer"
     },
     "settings": {
       "type": "array",
@@ -1479,6 +1483,115 @@
           ]
         }
       }
+    },
+    "canvasRenderer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "browser",
+        "libraries",
+        "guide"
+      ],
+      "description": "Schema 17. Lets agents draw animation layers as small web pages (WebGL, canvas, SVG, CSS and the libraries listed here). Arrumo downloads the headless browser for the creator's platform when they ask, checks its SHA-256, and renders each page frame by frame without network or file access.",
+      "properties": {
+        "browser": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "linux-x64",
+              "linux-arm64",
+              "macos-arm64",
+              "macos-x64",
+              "windows-x64"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/browserDownload"
+          }
+        },
+        "libraries": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/canvasLibrary"
+          }
+        },
+        "guide": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]{1,200}\\.md$",
+          "description": "Package path of Markdown the agent reads before writing a canvas layer."
+        }
+      }
+    },
+    "browserDownload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "sha256",
+        "size",
+        "executable"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^https://[^\\s]+\\.zip$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "executable": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/ -]{1,200}$",
+          "description": "Path of the headless browser inside the archive."
+        }
+      }
+    },
+    "canvasLibrary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "file",
+        "module",
+        "license",
+        "description"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,31}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9A-Za-z.+-]{1,32}$"
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]{1,200}\\.m?js$"
+        },
+        "module": {
+          "type": "boolean",
+          "description": "Loaded as an ES module named by id in the page's import map; otherwise as a classic script."
+        },
+        "license": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.+ ()-]{1,64}$"
+        },
+        "description": {
+          "type": "string",
+          "pattern": "\\S",
+          "maxLength": 240
+        }
+      }
     }
   },
   "dependentSchemas": {
@@ -1517,7 +1630,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1546,7 +1660,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1593,7 +1708,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1641,7 +1757,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1675,7 +1792,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1730,7 +1848,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1768,7 +1887,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1826,7 +1946,8 @@
               13,
               14,
               15,
-              16
+              16,
+              17
             ]
           }
         }
@@ -1954,6 +2075,20 @@
         "properties": {
           "schemaVersion": {
             "minimum": 16
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "canvasRenderer"
+        ]
+      },
+      "then": {
+        "properties": {
+          "schemaVersion": {
+            "minimum": 17
           }
         }
       }

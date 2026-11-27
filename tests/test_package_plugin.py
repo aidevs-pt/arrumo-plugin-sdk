@@ -146,6 +146,32 @@ class PackagePluginTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_package(self.source, [name])
 
+    def test_packages_a_canvas_renderer_with_its_guide_and_libraries(self):
+        from jsonschema import ValidationError
+
+        example = Path("examples/canvas")
+        manifest = json.loads((example / "manifest.json").read_text(encoding="utf-8"))
+        (self.source / "lib").mkdir()
+        for name in ("guide.md", "lib/tween.js"):
+            (self.source / name).write_bytes((example / name).read_bytes())
+        (self.source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        package, _ = build_package(self.source, [])
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            self.assertEqual(archive.namelist(), ["guide.md", "lib/tween.js", "manifest.json"])
+
+        for change, error in (
+            (lambda m: m.update(schemaVersion=16), ValidationError),
+            (lambda m: m["canvasRenderer"]["libraries"].append(dict(m["canvasRenderer"]["libraries"][0])), ValueError),
+            (lambda m: m["canvasRenderer"]["browser"]["linux-x64"].update(url="http://example.com/a.zip"), ValidationError),
+            (lambda m: m["canvasRenderer"]["browser"].update({"amiga": m["canvasRenderer"]["browser"]["linux-x64"]}), ValidationError),
+            (lambda m: m["canvasRenderer"]["libraries"][0].update(file="../tween.js"), ValidationError),
+        ):
+            broken = json.loads(json.dumps(manifest))
+            change(broken)
+            (self.source / "manifest.json").write_text(json.dumps(broken), encoding="utf-8")
+            with self.subTest(broken=broken), self.assertRaises(error):
+                build_package(self.source, [])
+
     def test_usage_events_need_schema_twelve(self):
         manifest = {
             "schemaVersion": 12, "id": "example-agent", "name": "Example agent",
